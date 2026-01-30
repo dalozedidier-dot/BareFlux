@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/apexobserver/report.schema.json",
+  "title": "ApexObserver Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "utc_start",
+    "utc_end",
+    "input",
+    "status",
+    "observations"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "utc_start": {
+      "type": "string"
+    },
+    "utc_end": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "invalid_input",
+        "partial"
+      ]
+    },
+    "input": {
+      "type": "object",
+      "required": [
+        "source",
+        "sha256"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      }
+    },
+    "observations": {
+      "type": "object"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
