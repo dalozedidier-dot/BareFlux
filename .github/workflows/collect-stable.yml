@@ -20,9 +20,14 @@ on:
         required: false
         default: "42"
 
+concurrency:
+  group: bloc4-collect-stable-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   collect:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout BareFlux
         uses: actions/checkout@v4
@@ -50,21 +55,32 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps (BareFlux + modules)
+      - name: Install dependencies (stability pinned)
         run: |
+          set -euo pipefail
           python -m pip install -U pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
-          pip install -r modules/RiftLens/requirements.txt
-          if [ -f modules/NullTrace/requirements.txt ] && [ -s modules/NullTrace/requirements.txt ]; then pip install -r modules/NullTrace/requirements.txt; fi
+          pip install -r requirements.txt -c constraints.txt
+          pip install -r requirements-dev.txt -c constraints.txt
+          pip install -r modules/RiftLens/requirements.txt -c constraints.txt
+          if [ -f modules/NullTrace/requirements.txt ] && [ -s modules/NullTrace/requirements.txt ]; then
+            pip install -r modules/NullTrace/requirements.txt -c constraints.txt
+          fi
 
       - name: Generate synthetic datasets
         run: |
-          python tools/generate_synth_datasets.py --out-dir _ci_out/datasets --n "${{ inputs.n }}" --seed "${{ inputs.seed }}"
+          set -euo pipefail
+          mkdir -p _ci_out/datasets
+          python tools/generate_synth_datasets.py --out-dir _ci_out/datasets --n "${{ github.event.inputs.n }}" --seed "${{ github.event.inputs.seed }}"
+
+      - name: Debug datasets (sanity)
+        run: |
+          set -euo pipefail
+          ls -la _ci_out/datasets || true
 
       - name: Collect + compute stability
         run: |
-          python tools/collect_stable.py --thresholds "${{ inputs.thresholds }}" --k "${{ inputs.k }}" --datasets-dir _ci_out/datasets --out-dir _ci_out/stability
+          set -euo pipefail
+          python tools/collect_stable.py             --thresholds "${{ github.event.inputs.thresholds }}"             --k "${{ github.event.inputs.k }}"             --datasets-dir "${{ github.workspace }}/_ci_out/datasets"             --out-dir "${{ github.workspace }}/_ci_out/stability"
 
       - name: Upload artifacts
         if: always()
