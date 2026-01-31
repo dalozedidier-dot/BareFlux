@@ -1,0 +1,57 @@
+name: Demande de changement
+description: Modification structurelle (contraintes + critères de validation)
+title: "[CHANGE] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: objectif
+    attributes:
+      label: Objet (descriptif)
+      description: Décrire ce qui doit changer (sans justification causale).
+      placeholder: "Ex: Ajouter un fixture CSV de 200 lignes pour éviter les cas skipped."
+    validations:
+      required: true
+
+  - type: textarea
+    id: contraintes
+    attributes:
+      label: Contraintes (non-compensables)
+      description: Contraintes explicites à respecter.
+      placeholder: |
+        - Web-only (Actions)
+        - Pas de liens externes dans la doc
+        - Bloc 4 isolé (pas de cross-link)
+    validations:
+      required: true
+
+  - type: textarea
+    id: criteres
+    attributes:
+      label: Critères de validation
+      description: Comment valider objectivement (tests, artefacts, invariants).
+      placeholder: |
+        - Workflow X doit passer
+        - Artefact Y doit contenir ...
+        - Aucun fichier ne contient "http" dans docs/
+    validations:
+      required: true
+
+  - type: dropdown
+    id: compat_e
+    attributes:
+      label: Compatibilité E
+      options:
+        - Compatible
+        - Incompatible (rupture assumée)
+        - Indéterminé
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact structurel
+      description: Fichiers, schémas, API/CLI, outputs touchés.
+      placeholder: "Ex: src/... ; .github/workflows/... ; outputs/_ci_out/..."
+    validations:
+      required: false

@@ -1,0 +1,90 @@
+name: Rapport de bug
+description: Signalement structuré d’un dysfonctionnement (observables + reproduction + artefacts)
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: observation
+    attributes:
+      label: Observation
+      description: Décrire ce qui est observé. Pas d’interprétation.
+      placeholder: "Ex: Module X échoue avec ModuleNotFoundError..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction minimale
+      description: Étapes minimales reproductibles.
+      placeholder: |
+        1) ...
+        2) ...
+        3) ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Résultat attendu (état de référence)
+      placeholder: "Ex: Le workflow smoke doit produire un artefact _ci_out/..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: obtenu
+    attributes:
+      label: Résultat obtenu (état observé)
+      placeholder: "Ex: Le job échoue avant l’upload d’artefact..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: contexte
+    attributes:
+      label: Contexte exécution
+      description: Versions, OS, commit SHA, workflow/job, dataset, etc.
+      placeholder: |
+        - OS:
+        - Python:
+        - Commit SHA:
+        - Workflow + job:
+        - Fichier(s) / dataset:
+    validations:
+      required: true
+
+  - type: dropdown
+    id: classification
+    attributes:
+      label: Classification
+      description: Catégorie structurante (DD / DD-R / E / CI / Docs / Packaging).
+      options:
+        - CI
+        - Packaging
+        - Docs
+        - Données (fixtures)
+        - DD
+        - DD-R
+        - E
+        - Autre
+    validations:
+      required: true
+
+  - type: textarea
+    id: artefacts
+    attributes:
+      label: Artefacts
+      description: Coller des extraits logs (courts) ou lister les fichiers (chemins) disponibles dans _ci_out/ / test-results/ / test-reports/.
+      placeholder: "Chemins + extraits (<= 30 lignes)."
+    validations:
+      required: false
+
+  - type: textarea
+    id: hypotheses
+    attributes:
+      label: Hypothèses (optionnel)
+      description: Hypothèses explicites (séparées des observables).
+      placeholder: "Ex: Peut-être un problème de PYTHONPATH dans le job..."
+    validations:
+      required: false
