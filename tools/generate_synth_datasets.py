@@ -1,43 +1,57 @@
 from __future__ import annotations
 
 import argparse
+import csv
+import math
+import random
 from pathlib import Path
-import numpy as np
-import pandas as pd
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Génère des CSV synthétiques (bloc 4) pour tests de stabilité.")
-    p.add_argument("--out-dir", type=str, default="_ci_out/datasets", help="Dossier de sortie")
-    p.add_argument("--n", type=int, default=200, help="Nombre de lignes")
-    p.add_argument("--seed", type=int, default=42, help="Seed RNG")
-    args = p.parse_args()
+    ap = argparse.ArgumentParser(description="Génère des CSV synthétiques (stdlib only) pour bloc 4.")
+    ap.add_argument("--out-dir", default="_ci_out/datasets")
+    ap.add_argument("--n", type=int, default=200)
+    ap.add_argument("--seed", type=int, default=42)
+    args = ap.parse_args()
 
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    rng = np.random.default_rng(args.seed)
     n = int(args.n)
-
-    # Dataset multi (RiftLens) : corrélation puis rupture
-    t = np.arange(n)
-    x = rng.normal(0, 1, size=n)
-    y = x + rng.normal(0, 0.1, size=n)  # fortement corrélé
-    z = rng.normal(0, 1, size=n)
+    random.seed(int(args.seed))
     mid = n // 2
-    y[mid:] = rng.normal(0, 1, size=n - mid)
 
-    df_multi = pd.DataFrame({"t": t, "x": x, "y": y, "z": z})
-    df_multi.to_csv(out / "multi.csv", index=False)
+    # multi.csv: t,x,y,z (y corrélé puis décorrélé)
+    rows = []
+    for t in range(n):
+        x = random.gauss(0.0, 1.0)
+        if t < mid:
+            y = x + random.gauss(0.0, 0.1)
+        else:
+            y = random.gauss(0.0, 1.0)
+        z = random.gauss(0.0, 1.0)
+        rows.append((t, x, y, z))
 
-    # NullTrace previous/current : rupture contrôlée
-    base = pd.DataFrame({"t": t, "a": rng.normal(0, 1, size=n), "b": rng.normal(0, 1, size=n)})
-    prev = base.copy()
-    curr = base.copy()
-    curr.loc[mid:, "a"] = curr.loc[mid:, "a"] + 0.25
-    curr.loc[mid:, "b"] = curr.loc[mid:, "b"] * 1.10
+    with (out / "multi.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["t", "x", "y", "z"])
+        w.writerows(rows)
 
-    prev.to_csv(out / "previous_shadow.csv", index=False)
-    curr.to_csv(out / "current.csv", index=False)
+    # previous/current for NullTrace: shift+scale after mid
+    prev_rows = []
+    curr_rows = []
+    for t in range(n):
+        a = random.gauss(0.0, 1.0)
+        b = random.gauss(0.0, 1.0)
+        prev_rows.append((t, a, b))
+        if t < mid:
+            curr_rows.append((t, a, b))
+        else:
+            curr_rows.append((t, a + 0.25, b * 1.10))
+
+    with (out / "previous_shadow.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f); w.writerow(["t", "a", "b"]); w.writerows(prev_rows)
+    with (out / "current.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f); w.writerow(["t", "a", "b"]); w.writerows(curr_rows)
 
     print(f"datasets_written={out.resolve()}")
 

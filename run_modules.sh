@@ -1,96 +1,134 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# BareFlux (bloc 4) : orchestration locale "côte à côte" + CI "modules/".
-# Invariants:
-# - Aucun lien vers le bloc 5.
-# - Exécutable en GitHub Actions (checkout repos bloc 4 sous modules/).
-# - Chemins datasets et outputs en absolu pour éviter les erreurs de cwd.
+# BareFlux orchestrator (bloc 4)
+# Supports CI call style: ./run_modules.sh --modules-dir modules --out _bareflux_out --strict
+# Also supports positional datasets after options:
+#   ./run_modules.sh [--modules-dir DIR] [--out DIR] [--strict] [MULTI_CSV] [CURRENT_CSV] [PREVIOUS_CSV]
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT_DIR="$(cd "$REPO_DIR/.." && pwd)"
 
-# 1) Déterminer où sont les 3 autres modules
-if [ -d "$PARENT_DIR/RiftLens/src" ] && [ -d "$PARENT_DIR/NullTrace/src" ] && [ -d "$PARENT_DIR/VoidMark/src" ]; then
-  MODULES_DIR="$PARENT_DIR"
-elif [ -d "$REPO_DIR/modules/RiftLens/src" ] && [ -d "$REPO_DIR/modules/NullTrace/src" ] && [ -d "$REPO_DIR/modules/VoidMark/src" ]; then
-  MODULES_DIR="$REPO_DIR/modules"
+MODULES_DIR=""
+OUT_DIR=""
+STRICT="false"
+
+# -------- option parsing --------
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --modules-dir)
+      MODULES_DIR="${2:-}"
+      shift 2
+      ;;
+    --out|--output-dir)
+      OUT_DIR="${2:-}"
+      shift 2
+      ;;
+    --strict)
+      STRICT="true"
+      shift 1
+      ;;
+    --help|-h)
+      echo "Usage: ./run_modules.sh [--modules-dir DIR] [--out DIR] [--strict] [MULTI_CSV] [CURRENT_CSV] [PREVIOUS_CSV]"
+      exit 0
+      ;;
+    --*)
+      echo "Option inconnue: $1"
+      exit 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+# -------- defaults --------
+if [ -z "$OUT_DIR" ]; then
+  OUT_DIR="$REPO_DIR/_bareflux_out"
+fi
+mkdir -p "$OUT_DIR"
+
+# modules dir resolution:
+# - CI: REPO_DIR/modules
+# - local: parent dir containing siblings RiftLens/NullTrace/VoidMark
+if [ -z "$MODULES_DIR" ]; then
+  if [ -d "$REPO_DIR/modules/RiftLens/src" ]; then
+    MODULES_DIR="$REPO_DIR/modules"
+  else
+    MODULES_DIR="$(cd "$REPO_DIR/.." && pwd)"
+  fi
 else
-  echo "Modules introuvables. Attendu:"
-  echo " - mode local:  $PARENT_DIR/{RiftLens,NullTrace,VoidMark}"
-  echo " - mode CI:     $REPO_DIR/modules/{RiftLens,NullTrace,VoidMark}"
+  # allow relative path
+  if [ "${MODULES_DIR:0:1}" != "/" ]; then
+    MODULES_DIR="$REPO_DIR/$MODULES_DIR"
+  fi
+fi
+
+RIFT_DIR="$MODULES_DIR/RiftLens"
+NT_DIR="$MODULES_DIR/NullTrace"
+VM_DIR="$MODULES_DIR/VoidMark"
+
+if [ ! -d "$RIFT_DIR/src" ] || [ ! -d "$NT_DIR/src" ] || [ ! -d "$VM_DIR/src" ]; then
+  echo "Modules introuvables dans MODULES_DIR=$MODULES_DIR"
+  echo "Attendu: $MODULES_DIR/{RiftLens,NullTrace,VoidMark}/src"
   exit 2
 fi
 
-# 2) Datasets: si non fournis, essayer d'abord _ci_out/datasets puis tests/data
-default_multi=""
-default_current=""
-default_prev=""
+# -------- datasets (positional) --------
+MULTI_CSV="${1:-}"
+CURRENT_CSV="${2:-}"
+PREVIOUS_CSV="${3:-}"
 
-if [ -f "$REPO_DIR/_ci_out/datasets/multi.csv" ]; then default_multi="$REPO_DIR/_ci_out/datasets/multi.csv"; fi
-if [ -f "$REPO_DIR/_ci_out/datasets/current.csv" ]; then default_current="$REPO_DIR/_ci_out/datasets/current.csv"; fi
-if [ -f "$REPO_DIR/_ci_out/datasets/previous_shadow.csv" ]; then default_prev="$REPO_DIR/_ci_out/datasets/previous_shadow.csv"; fi
+DATASETS_DIR="$REPO_DIR/_ci_out/datasets"
+mkdir -p "$DATASETS_DIR"
 
-if [ -z "$default_multi" ] && [ -f "$REPO_DIR/tests/data/multi.csv" ]; then default_multi="$REPO_DIR/tests/data/multi.csv"; fi
-if [ -z "$default_current" ] && [ -f "$REPO_DIR/tests/data/current.csv" ]; then default_current="$REPO_DIR/tests/data/current.csv"; fi
-if [ -z "$default_prev" ] && [ -f "$REPO_DIR/tests/data/previous_shadow.csv" ]; then default_prev="$REPO_DIR/tests/data/previous_shadow.csv"; fi
+# If any dataset is missing, auto-generate into _ci_out/datasets/
+need_gen="false"
+if [ -z "$MULTI_CSV" ] || [ ! -f "$MULTI_CSV" ]; then need_gen="true"; fi
+if [ -z "$CURRENT_CSV" ] || [ ! -f "$CURRENT_CSV" ]; then need_gen="true"; fi
+if [ -z "$PREVIOUS_CSV" ] || [ ! -f "$PREVIOUS_CSV" ]; then need_gen="true"; fi
 
-DATASET_MULTI="${1:-$default_multi}"
-DATASET_CURRENT="${2:-$default_current}"
-DATASET_PREV="${3:-$default_prev}"
+if [ "$need_gen" = "true" ]; then
+  python "$REPO_DIR/tools/generate_synth_datasets.py" --out-dir "$DATASETS_DIR" --n 200 --seed 42
+  MULTI_CSV="$DATASETS_DIR/multi.csv"
+  CURRENT_CSV="$DATASETS_DIR/current.csv"
+  PREVIOUS_CSV="$DATASETS_DIR/previous_shadow.csv"
+fi
 
-OUT_DIR="${4:-$REPO_DIR/_ci_out/run-all}"
-mkdir -p "$OUT_DIR"
+# Resolve relative paths (if provided)
+if [ "${MULTI_CSV:0:1}" != "/" ]; then MULTI_CSV="$REPO_DIR/$MULTI_CSV"; fi
+if [ "${CURRENT_CSV:0:1}" != "/" ]; then CURRENT_CSV="$REPO_DIR/$CURRENT_CSV"; fi
+if [ "${PREVIOUS_CSV:0:1}" != "/" ]; then PREVIOUS_CSV="$REPO_DIR/$PREVIOUS_CSV"; fi
 
-# Validate inputs
-if [ -z "$DATASET_MULTI" ] || [ ! -f "$DATASET_MULTI" ]; then
+if [ ! -f "$MULTI_CSV" ]; then
   echo "Dataset multi.csv introuvable."
-  echo "Fourni: '$DATASET_MULTI'"
-  echo "Attendu: _ci_out/datasets/multi.csv ou tests/data/multi.csv ou argument 1."
-  exit 3
-fi
-if [ -z "$DATASET_CURRENT" ] || [ ! -f "$DATASET_CURRENT" ]; then
-  echo "Dataset current.csv introuvable."
-  echo "Fourni: '$DATASET_CURRENT'"
-  echo "Attendu: _ci_out/datasets/current.csv ou tests/data/current.csv ou argument 2."
-  exit 3
-fi
-if [ -z "$DATASET_PREV" ] || [ ! -f "$DATASET_PREV" ]; then
-  echo "Dataset previous_shadow.csv introuvable."
-  echo "Fourni: '$DATASET_PREV'"
-  echo "Attendu: _ci_out/datasets/previous_shadow.csv ou tests/data/previous_shadow.csv ou argument 3."
+  echo "Fourni: '${1:-<vide>}'"
+  echo "Attendu: _ci_out/datasets/multi.csv ou tests/data/multi.csv ou argument MULTI_CSV."
   exit 3
 fi
 
-# Canonicalize to absolute paths
-DATASET_MULTI="$(cd "$(dirname "$DATASET_MULTI")" && pwd)/$(basename "$DATASET_MULTI")"
-DATASET_CURRENT="$(cd "$(dirname "$DATASET_CURRENT")" && pwd)/$(basename "$DATASET_CURRENT")"
-DATASET_PREV="$(cd "$(dirname "$DATASET_PREV")" && pwd)/$(basename "$DATASET_PREV")"
-OUT_DIR="$(cd "$OUT_DIR" && pwd)"
-
-# 3) PYTHONPATH (exécution sans packaging)
-export PYTHONPATH="$MODULES_DIR/RiftLens/src:$MODULES_DIR/NullTrace/src:$MODULES_DIR/VoidMark/src:$REPO_DIR/src:${PYTHONPATH:-}"
+# -------- PYTHONPATH --------
+export PYTHONPATH="$RIFT_DIR/src:$NT_DIR/src:$VM_DIR/src:$REPO_DIR/src:${PYTHONPATH:-}"
 
 echo "BareFlux - Orchestration bloc 4"
 echo "MODULES_DIR=$MODULES_DIR"
-echo "DATASET_MULTI=$DATASET_MULTI"
-echo "DATASET_PREV=$DATASET_PREV"
-echo "DATASET_CURRENT=$DATASET_CURRENT"
 echo "OUT_DIR=$OUT_DIR"
+echo "MULTI_CSV=$MULTI_CSV"
+echo "CURRENT_CSV=$CURRENT_CSV"
+echo "PREVIOUS_CSV=$PREVIOUS_CSV"
+echo "STRICT=$STRICT"
 
-# RiftLens
-cd "$MODULES_DIR/RiftLens"
-python -m riftlens "$DATASET_MULTI" --corr-threshold 0.6 --output-dir "$OUT_DIR/riftlens"
+# -------- run RiftLens --------
+mkdir -p "$OUT_DIR/riftlens"
+python -m riftlens "$MULTI_CSV" --corr-threshold 0.6 --output-dir "$OUT_DIR/riftlens"
 
-# NullTrace (2 étapes : snapshot previous puis snapshot current + diff)
-cd "$MODULES_DIR/NullTrace"
-python -m nulltrace snapshot "$DATASET_PREV" --output-dir "$OUT_DIR/nulltrace_prev"
+# -------- run NullTrace prev -> current --------
+mkdir -p "$OUT_DIR/nulltrace_prev" "$OUT_DIR/nulltrace_curr"
+python -m nulltrace snapshot "$PREVIOUS_CSV" --output-dir "$OUT_DIR/nulltrace_prev"
 PREV_MANIFEST="$(ls -t "$OUT_DIR/nulltrace_prev/shadows"/*/manifest.json | head -n 1)"
+python -m nulltrace snapshot "$CURRENT_CSV" --previous-shadow "$PREV_MANIFEST" --output-dir "$OUT_DIR/nulltrace_curr"
 
-python -m nulltrace snapshot "$DATASET_CURRENT" --previous-shadow "$PREV_MANIFEST" --output-dir "$OUT_DIR/nulltrace_curr"
-
-# VoidMark (marks sur graph_report.json RiftLens)
-cd "$MODULES_DIR/VoidMark"
+# -------- run VoidMark --------
+mkdir -p "$OUT_DIR/vault"
 python -m voidmark "$OUT_DIR/riftlens/graph_report.json" --vault-dir "$OUT_DIR/vault"
 
-echo "Tous les modules testés."
+echo "OK"
