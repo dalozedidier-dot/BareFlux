@@ -16,13 +16,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Detect token presence
+        id: tok
+        env:
+          REPO_SETTINGS_TOKEN: ${{ secrets.REPO_SETTINGS_TOKEN }}
+        run: |
+          if [ -n "${REPO_SETTINGS_TOKEN}" ]; then
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Appliquer settings dépôt
-        if: ${{ secrets.REPO_SETTINGS_TOKEN != '' }}
+        if: ${{ steps.tok.outputs.has_token == 'true' }}
         uses: mooseburger/repository-settings-action@v0.1.3
         with:
           token: ${{ secrets.REPO_SETTINGS_TOKEN }}
           settings-path: .github/settings.yml
 
       - name: Skip si token absent
-        if: ${{ secrets.REPO_SETTINGS_TOKEN == '' }}
+        if: ${{ steps.tok.outputs.has_token != 'true' }}
         run: echo "REPO_SETTINGS_TOKEN absent, aucune mise à jour appliquée."
