@@ -1,25 +1,16 @@
-name: Mises à jour
+name: Mises à jour (repo settings)
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - .github/settings.yml
-      - .github/workflows/apply-repo-settings.yml
   workflow_dispatch:
-
-permissions:
-  contents: read
+  push:
+    paths:
+      - ".github/workflows/apply-repo-settings.yml"
 
 jobs:
-  update-settings:
-    # Skip automatically if the PAT secret is not configured.
-    if: ${{ secrets.REPO_SETTINGS_TOKEN != '' }}
+  apply-repo-settings:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Apply Repo Settings
-        uses: mooseburgr/repository-settings-action@v0.1.3
-        with:
-          token: ${{ secrets.REPO_SETTINGS_TOKEN }}
-          settings-path: .github/settings.yml
+      - name: Placeholder (non bloquant)
+        run: |
+          echo "apply-repo-settings: workflow volontairement neutre."
+          echo "Si tu veux automatiser des réglages GitHub: ajouter un script et/ou une action dédiée."
