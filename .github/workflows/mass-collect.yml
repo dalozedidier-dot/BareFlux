@@ -60,15 +60,37 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
-      - name: Install dependencies (pinned)
+      - name: Install dependencies (pinned if constraints.txt exists)
         run: |
           set -euo pipefail
           python -m pip install -U pip
-          pip install -r requirements.txt -c constraints.txt
-          pip install -r requirements-dev.txt -c constraints.txt
-          pip install -r modules/RiftLens/requirements.txt -c constraints.txt
+
+          CONSTRAINTS=""
+          if [ -f constraints.txt ]; then
+            echo "Using constraints.txt"
+            CONSTRAINTS="-c constraints.txt"
+          else
+            echo "constraints.txt absent, installation non verrouillée"
+          fi
+
+          pip install -r requirements.txt $CONSTRAINTS
+
+          if [ -f requirements-dev.txt ] && [ -s requirements-dev.txt ]; then
+            pip install -r requirements-dev.txt $CONSTRAINTS
+          else
+            echo "requirements-dev.txt absent ou vide, skip"
+          fi
+
+          if [ -f modules/RiftLens/requirements.txt ] && [ -s modules/RiftLens/requirements.txt ]; then
+            pip install -r modules/RiftLens/requirements.txt $CONSTRAINTS
+          else
+            echo "modules/RiftLens/requirements.txt absent ou vide, skip"
+          fi
+
           if [ -f modules/NullTrace/requirements.txt ] && [ -s modules/NullTrace/requirements.txt ]; then
-            pip install -r modules/NullTrace/requirements.txt -c constraints.txt
+            pip install -r modules/NullTrace/requirements.txt $CONSTRAINTS
+          else
+            echo "modules/NullTrace/requirements.txt absent ou vide, skip"
           fi
 
       - name: Mass loop
@@ -90,7 +112,11 @@ jobs:
 
             python tools/generate_synth_datasets.py --out-dir "${RUN_DIR}/datasets" --n "$N" --seed "$SEED"
 
-            python tools/collect_stable.py               --thresholds "$THR"               --k "$K"               --datasets-dir "${{ github.workspace }}/${RUN_DIR}/datasets"               --out-dir "${{ github.workspace }}/${RUN_DIR}/stability"
+            python tools/collect_stable.py \
+              --thresholds "$THR" \
+              --k "$K" \
+              --datasets-dir "${{ github.workspace }}/${RUN_DIR}/datasets" \
+              --out-dir "${{ github.workspace }}/${RUN_DIR}/stability"
           done
 
       - name: Upload artifacts
