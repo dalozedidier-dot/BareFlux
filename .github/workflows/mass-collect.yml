@@ -1,0 +1,101 @@
+name: mass-collect
+
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: "Nombre d'itérations (ex 100)"
+        required: false
+        default: "100"
+      n:
+        description: "Lignes par dataset synthétique"
+        required: false
+        default: "200"
+      seed_base:
+        description: "Base seed (seed = seed_base + i)"
+        required: false
+        default: "1000"
+      thresholds:
+        description: "Seuils corr-threshold (csv)"
+        required: false
+        default: "0.50,0.60,0.70,0.75,0.80"
+      k:
+        description: "Répétitions par seuil (collect_stable)"
+        required: false
+        default: "5"
+
+concurrency:
+  group: bloc4-mass-collect-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mass:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout BareFlux
+        uses: actions/checkout@v4
+
+      - name: Checkout RiftLens
+        uses: actions/checkout@v4
+        with:
+          repository: dalozedidier-dot/RiftLens
+          path: modules/RiftLens
+
+      - name: Checkout NullTrace
+        uses: actions/checkout@v4
+        with:
+          repository: dalozedidier-dot/NullTrace
+          path: modules/NullTrace
+
+      - name: Checkout VoidMark
+        uses: actions/checkout@v4
+        with:
+          repository: dalozedidier-dot/VoidMark
+          path: modules/VoidMark
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies (pinned)
+        run: |
+          set -euo pipefail
+          python -m pip install -U pip
+          pip install -r requirements.txt -c constraints.txt
+          pip install -r requirements-dev.txt -c constraints.txt
+          pip install -r modules/RiftLens/requirements.txt -c constraints.txt
+          if [ -f modules/NullTrace/requirements.txt ] && [ -s modules/NullTrace/requirements.txt ]; then
+            pip install -r modules/NullTrace/requirements.txt -c constraints.txt
+          fi
+
+      - name: Mass loop
+        run: |
+          set -euo pipefail
+          RUNS="${{ github.event.inputs.runs }}"
+          N="${{ github.event.inputs.n }}"
+          SEED_BASE="${{ github.event.inputs.seed_base }}"
+          THR="${{ github.event.inputs.thresholds }}"
+          K="${{ github.event.inputs.k }}"
+
+          mkdir -p _ci_out/mass
+          echo "runs=${RUNS} n=${N} seed_base=${SEED_BASE} thresholds=${THR} k=${K}"
+
+          for i in $(seq 1 "$RUNS"); do
+            SEED=$((SEED_BASE + i))
+            RUN_DIR="_ci_out/mass/run_${i}"
+            mkdir -p "${RUN_DIR}/datasets" "${RUN_DIR}/stability"
+
+            python tools/generate_synth_datasets.py --out-dir "${RUN_DIR}/datasets" --n "$N" --seed "$SEED"
+
+            python tools/collect_stable.py               --thresholds "$THR"               --k "$K"               --datasets-dir "${{ github.workspace }}/${RUN_DIR}/datasets"               --out-dir "${{ github.workspace }}/${RUN_DIR}/stability"
+          done
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bloc4-mass-collect
+          path: _ci_out/mass/**
