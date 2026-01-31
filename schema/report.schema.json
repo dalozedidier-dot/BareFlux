@@ -1,6 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.local/apexobserver/report.schema.json",
   "title": "ApexObserver Report",
   "type": "object",
   "required": [

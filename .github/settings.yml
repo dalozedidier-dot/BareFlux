@@ -1,6 +1,6 @@
 repository:
   name: BareFlux
-  description: Orchestrateur: exécute RiftLens, NullTrace, VoidMark et collecte les outputs.
+  description: "Orchestrateur: exécute RiftLens, NullTrace, VoidMark et collecte les outputs."
   topics:
     - python
     - ci

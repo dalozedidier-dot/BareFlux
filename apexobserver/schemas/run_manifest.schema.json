@@ -1,6 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.org/apexobserver/run_manifest.schema.json",
   "title": "ApexObserver Run Manifest",
   "type": "object",
   "required": [
