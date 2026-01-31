@@ -1,20 +1,27 @@
-name: run-all
+name: collect-stable
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "run_modules.sh"
-      - ".github/workflows/run-all.yml"
-      - "tests/**"
-  pull_request:
-    paths:
-      - "run_modules.sh"
-      - ".github/workflows/run-all.yml"
-      - "tests/**"
+    inputs:
+      thresholds:
+        description: "Seuils corr-threshold (csv) : ex 0.50,0.60,0.70,0.75,0.80"
+        required: false
+        default: "0.50,0.60,0.70,0.75,0.80"
+      k:
+        description: "Répétitions par seuil"
+        required: false
+        default: "5"
+      n:
+        description: "Lignes par dataset synthétique"
+        required: false
+        default: "200"
+      seed:
+        description: "Seed RNG"
+        required: false
+        default: "42"
 
 jobs:
-  run-all:
+  collect:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout BareFlux
@@ -51,15 +58,19 @@ jobs:
           pip install -r modules/RiftLens/requirements.txt
           if [ -f modules/NullTrace/requirements.txt ] && [ -s modules/NullTrace/requirements.txt ]; then pip install -r modules/NullTrace/requirements.txt; fi
 
-      - name: Run orchestrator
+      - name: Generate synthetic datasets
         run: |
-          chmod +x ./run_modules.sh
-          ./run_modules.sh
+          python tools/generate_synth_datasets.py --out-dir _ci_out/datasets --n "${{ inputs.n }}" --seed "${{ inputs.seed }}"
+
+      - name: Collect + compute stability
+        run: |
+          python tools/collect_stable.py --thresholds "${{ inputs.thresholds }}" --k "${{ inputs.k }}" --datasets-dir _ci_out/datasets --out-dir _ci_out/stability
 
       - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: bloc4-run-all
+          name: bloc4-stability
           path: |
-            _ci_out/**
+            _ci_out/datasets/**
+            _ci_out/stability/**
