@@ -5,13 +5,13 @@ on:
   push:
     paths:
       - "run_modules.sh"
+      - "tools/**"
       - ".github/workflows/run-all.yml"
-      - "tests/**"
   pull_request:
     paths:
       - "run_modules.sh"
+      - "tools/**"
       - ".github/workflows/run-all.yml"
-      - "tests/**"
 
 jobs:
   run-all:
@@ -51,10 +51,14 @@ jobs:
           pip install -r modules/RiftLens/requirements.txt
           if [ -f modules/NullTrace/requirements.txt ] && [ -s modules/NullTrace/requirements.txt ]; then pip install -r modules/NullTrace/requirements.txt; fi
 
+      - name: Generate synthetic datasets (CI)
+        run: |
+          python tools/generate_synth_datasets.py --out-dir _ci_out/datasets --n 200 --seed 42
+
       - name: Run orchestrator
         run: |
           chmod +x ./run_modules.sh
-          ./run_modules.sh
+          ./run_modules.sh "_ci_out/datasets/multi.csv" "_ci_out/datasets/current.csv" "_ci_out/datasets/previous_shadow.csv" "_ci_out/run-all"
 
       - name: Upload artifacts
         if: always()

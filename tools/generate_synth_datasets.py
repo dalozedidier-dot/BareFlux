@@ -21,10 +21,10 @@ def main() -> None:
     # Dataset multi (RiftLens) : corrélation puis rupture
     t = np.arange(n)
     x = rng.normal(0, 1, size=n)
-    y = x + rng.normal(0, 0.1, size=n)  # corrélé
+    y = x + rng.normal(0, 0.1, size=n)  # fortement corrélé
     z = rng.normal(0, 1, size=n)
     mid = n // 2
-    y[mid:] = rng.normal(0, 1, size=n - mid)  # rupture: décorrélation
+    y[mid:] = rng.normal(0, 1, size=n - mid)
 
     df_multi = pd.DataFrame({"t": t, "x": x, "y": y, "z": z})
     df_multi.to_csv(out / "multi.csv", index=False)
