@@ -12,12 +12,17 @@ permissions:
 
 jobs:
   update-settings:
-    if: ${{ secrets.REPO_SETTINGS_TOKEN != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Appliquer settings dépôt
-        uses: mooseburgr/repository-settings-action@v0.1.3
+        if: ${{ secrets.REPO_SETTINGS_TOKEN != '' }}
+        uses: mooseburger/repository-settings-action@v0.1.3
         with:
           token: ${{ secrets.REPO_SETTINGS_TOKEN }}
           settings-path: .github/settings.yml
+
+      - name: Skip si token absent
+        if: ${{ secrets.REPO_SETTINGS_TOKEN == '' }}
+        run: echo "REPO_SETTINGS_TOKEN absent, aucune mise à jour appliquée."
