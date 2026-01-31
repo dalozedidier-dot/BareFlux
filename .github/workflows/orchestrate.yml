@@ -1,0 +1,58 @@
+name: Orchestrate All Modules
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  run-all:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout BareFlux
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Clone modules (loose)
+        run: |
+          mkdir -p modules
+          git clone --depth 1 https://github.com/dalozedidier-dot/NullTrace.git modules/NullTrace
+          git clone --depth 1 https://github.com/dalozedidier-dot/RiftLens.git  modules/RiftLens
+          git clone --depth 1 https://github.com/dalozedidier-dot/VoidMark.git  modules/VoidMark
+
+      - name: Install dependencies (all modules)
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          for dir in modules/NullTrace modules/RiftLens modules/VoidMark .; do
+            echo ""
+            echo "== Installing deps in $dir =="
+            if [ -f "$dir/requirements.txt" ] && [ -s "$dir/requirements.txt" ]; then python -m pip install -r "$dir/requirements.txt"; fi
+            if [ -f "$dir/requirements-dev.txt" ] && [ -s "$dir/requirements-dev.txt" ]; then python -m pip install -r "$dir/requirements-dev.txt"; fi
+          done
+
+      - name: Run orchestrator
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          chmod +x run_modules.sh
+          ./run_modules.sh --modules-dir modules --out _bareflux_out --strict
+
+      - name: Upload outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bareflux-orchestration-out
+          path: |
+            _bareflux_out/
+            modules/NullTrace/outputs/
+            modules/RiftLens/outputs/
+            modules/VoidMark/vault_test/
+          if-no-files-found: ignore
