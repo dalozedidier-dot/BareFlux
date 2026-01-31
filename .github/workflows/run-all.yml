@@ -1,0 +1,66 @@
+name: run-all
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run-all:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout BareFlux
+        uses: actions/checkout@v4
+
+      - name: Checkout NullTrace
+        uses: actions/checkout@v4
+        with:
+          repository: dalozedidier-dot/NullTrace
+          path: modules/NullTrace
+
+      - name: Checkout RiftLens
+        uses: actions/checkout@v4
+        with:
+          repository: dalozedidier-dot/RiftLens
+          path: modules/RiftLens
+
+      - name: Checkout VoidMark
+        uses: actions/checkout@v4
+        with:
+          repository: dalozedidier-dot/VoidMark
+          path: modules/VoidMark
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies (all modules)
+        run: |
+          python -m pip install -U pip
+          for m in BareFlux NullTrace RiftLens VoidMark; do
+            if [ -f "modules/$m/requirements-dev.txt" ]; then
+              python -m pip install -r "modules/$m/requirements-dev.txt"
+            elif [ -f "modules/$m/requirements.txt" ]; then
+              python -m pip install -r "modules/$m/requirements.txt"
+            fi
+          done
+          if [ -f "requirements-dev.txt" ]; then
+            python -m pip install -r requirements-dev.txt
+          elif [ -f "requirements.txt" ]; then
+            python -m pip install -r requirements.txt
+          fi
+
+      - name: Run orchestrator
+        run: |
+          bash ./run_modules.sh
+
+      - name: Upload outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run_all_outputs
+          path: |
+            modules/**/outputs/**
+            modules/**/vault_test/**
