@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/apexobserver/config.schema.json",
+  "title": "ApexObserver Config",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "seed",
+    "rupture",
+    "outliers",
+    "seasonality"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "timestamp_column": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "series_columns": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "max_points_plot": {
+      "type": "integer"
+    },
+    "rupture": {
+      "type": "object",
+      "required": [
+        "method",
+        "window",
+        "topk"
+      ],
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "window": {
+          "type": "integer"
+        },
+        "topk": {
+          "type": "integer"
+        }
+      }
+    },
+    "outliers": {
+      "type": "object",
+      "required": [
+        "method",
+        "window",
+        "z_threshold"
+      ],
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "window": {
+          "type": "integer"
+        },
+        "z_threshold": {
+          "type": "number"
+        }
+      }
+    },
+    "seasonality": {
+      "type": "object",
+      "required": [
+        "fft_topk",
+        "min_period"
+      ],
+      "properties": {
+        "fft_topk": {
+          "type": "integer"
+        },
+        "min_period": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

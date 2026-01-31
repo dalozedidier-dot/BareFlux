@@ -1,0 +1,21 @@
+name: Apply Repo Settings
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - .github/settings.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update-settings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply Repo Settings
+        uses: mooseburgr/repository-settings-action@v1
+        with:
+          token: ${{ secrets.REPO_SETTINGS_TOKEN }}
+          settings-path: .github/settings.yml
