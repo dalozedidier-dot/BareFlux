@@ -60,11 +60,11 @@ jobs:
 
       - name: Generate synthetic datasets
         run: |
-          python tools/generate_synth_datasets.py             --out-dir _ci_out/datasets             --n "${{ github.event.inputs.n }}"             --seed "${{ github.event.inputs.seed }}"
+          python tools/generate_synth_datasets.py --out-dir _ci_out/datasets --n "${{ inputs.n }}" --seed "${{ inputs.seed }}"
 
       - name: Collect + compute stability
         run: |
-          python tools/collect_stable.py             --thresholds "${{ github.event.inputs.thresholds }}"             --k "${{ github.event.inputs.k }}"             --datasets-dir _ci_out/datasets             --out-dir _ci_out/stability
+          python tools/collect_stable.py --thresholds "${{ inputs.thresholds }}" --k "${{ inputs.k }}" --datasets-dir _ci_out/datasets --out-dir _ci_out/stability
 
       - name: Upload artifacts
         if: always()
