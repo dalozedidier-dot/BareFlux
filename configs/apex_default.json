@@ -1,0 +1,21 @@
+{
+  "schema_version": "apexobserver.config.v1",
+  "seed": 1337,
+  "timestamp_column": null,
+  "series_columns": null,
+  "max_points_plot": 5000,
+  "rupture": {
+    "method": "rolling_mean_delta_topk",
+    "window": 25,
+    "topk": 10
+  },
+  "outliers": {
+    "method": "rolling_zscore",
+    "window": 25,
+    "z_threshold": 3.5
+  },
+  "seasonality": {
+    "fft_topk": 5,
+    "min_period": 2
+  }
+}

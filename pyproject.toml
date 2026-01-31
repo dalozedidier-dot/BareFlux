@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ApexObserver"
+version = "0.1.0"
+description = "Minimal descriptive observer that produces auditable run bundles from time series CSV."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "ApexObserver Contributors"}]
+dependencies = ["pandas>=2.0"]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "jsonschema>=4.0"
+]
+
+[project.scripts]
+apexobserver = "apexobserver.cli:main"
+
+[tool.setuptools]
+packages = ["apexobserver"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
