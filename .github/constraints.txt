@@ -1,0 +1,16 @@
+# .github/constraints.txt
+# Verrouillage minimal BareFlux (workflow mass-collect)
+numpy==1.26.4
+pandas==2.2.2
+matplotlib==3.9.2
+networkx==3.3
+pillow==10.4.0
+scipy==1.13.1
+jsonschema==4.23.0
+pytest==8.3.3
+python-dateutil==2.9.0.post0
+pytz==2024.1
+tzdata==2024.1
+six==1.17.0
+packaging==24.1
+typing-extensions==4.12.2
