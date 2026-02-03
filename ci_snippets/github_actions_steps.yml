@@ -3,7 +3,7 @@
 
 - name: BareFlux postprocess (fix n_edges + score drift + b readability)
   run: |
-    python tools/bareflux_postprocess.py --out _bareflux_out --inplace
+    python tools/bareflux_postprocess.py --out _bareflux_out --inplace --skip-if-missing
 
 - name: Dedup graph artifacts zips (optionnel)
   run: |
@@ -13,7 +13,3 @@
   run: |
     python tools/store_history.py --out _bareflux_out --history .bareflux_history.jsonl --keep 10
     python tools/trend_report.py --history .bareflux_history.jsonl --out _bareflux_out/bareflux_trend.csv
-
-# Insight optionnel:
-# - RiftLens sweep report (si tu as un dossier "riftlens_mass/")
-#   python tools/riftlens_sweep_report.py --root riftlens_mass --out_csv _bareflux_out/riftlens_sweep.csv --out_json _bareflux_out/riftlens_sweep.json

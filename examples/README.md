@@ -13,7 +13,7 @@ python -m pip install -U pandas
 ```
 
 ## Scripts
-- extract_and_print.py : affiche les blocs (shadow diff / RiftLens / VoidMark / score)
+- extract_and_print.py : imprime un résumé (shadow diff / RiftLens / VoidMark / score)
 - make_report_md.py : génère un mini rapport Markdown (README/article)
 
 Chemins :

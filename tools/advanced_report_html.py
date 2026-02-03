@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 """
-Advanced (optional): génère un mini rapport HTML (sans dépendances lourdes).
-- Inclut liens vers JSON/CSV produits par postprocess.
-- Si des PNG existent, ils seront référencés.
-
+Advanced (optional): mini rapport HTML listant les outputs _bareflux_out.
 Usage:
   python tools/advanced_report_html.py --out _bareflux_out --html _bareflux_out/report.html
 """
@@ -34,13 +31,13 @@ def main():
     for fp in items:
         name = os.path.basename(fp)
         lines.append(f"<li><a href='{_html.escape(name)}'>{_html.escape(name)}</a></li>")
-    lines.append("</ul>")
-    lines.append("</body></html>")
+    lines.append("</ul></body></html>")
 
     os.makedirs(os.path.dirname(args.html), exist_ok=True)
     with open(args.html, "w", encoding="utf-8") as f:
         f.write("
 ".join(lines))
+
     print("OK", args.html)
 
 

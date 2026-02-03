@@ -25,33 +25,35 @@ def main() -> None:
     b_q75 = None
     t_share = None
 
-    # Shadow diff
     csv_path = base / "bareflux_shadow_diff_stats.csv"
     if csv_path.exists():
-        import pandas as pd  # dependency
+        import pandas as pd
         df = pd.read_csv(csv_path)
         if "column" in df.columns:
             def row(col):
                 r = df[df["column"] == col]
                 return None if r.empty else r.iloc[0]
+
             rb = row("b")
             ra = row("a")
             rt = row("t")
+
             if rb is not None:
                 b_mean = float(rb.get("mean", 0.0))
                 b_entropy = float(rb.get("entropy_bits", 0.0))
                 if "q75" in rb.index:
                     b_q75 = float(rb.get("q75"))
-            if ra is not None:
-                a_entropy = float(ra.get("entropy_bits", 0.0)) if "entropy_bits" in ra.index else None
+
+            if ra is not None and "entropy_bits" in ra.index:
+                a_entropy = float(ra.get("entropy_bits", 0.0))
+
             if rt is not None and "share_nonzero" in rt.index:
                 t_share = float(rt.get("share_nonzero", 0.0))
 
-    # RiftLens
     rl_nodes = rl_edges = rl_edgew = None
     rift_path = base / "riftlens_by_threshold.csv"
     if rift_path.exists():
-        import pandas as pd  # dependency
+        import pandas as pd
         df = pd.read_csv(rift_path)
         if "nodes_mean" in df.columns:
             rl_nodes = float(df["nodes_mean"].mean())
@@ -60,7 +62,6 @@ def main() -> None:
         if "edgew_mean" in df.columns:
             rl_edgew = float(df["edgew_mean"].mean())
 
-    # VoidMark global
     vm_mean_of_means = vm_entropy = None
     vm_path = base / "voidmark_global.json"
     if vm_path.exists():

@@ -6,24 +6,14 @@ Exemples concrets et prêts à l'emploi pour:
   - VoidMark (robustesse au bruit)
   - Score composite (simple)
 
-Usage (dossier courant contenant les fichiers):
-  python examples/extract_and_print.py
-
-Usage (chemin explicite):
+Usage:
+  python examples/extract_and_print.py --path .
   python examples/extract_and_print.py --path _bareflux_out
-
-Fichiers attendus (si présents):
-  - bareflux_shadow_diff_stats.csv
-  - bloc4_shadow_diff_stats.csv
-  - riftlens_by_threshold.csv
-  - voidmark_run_stats.csv
-  - voidmark_global.json
 """
 from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 
 
@@ -36,7 +26,7 @@ def _exists(path: str) -> bool:
 
 
 def part1_shadow_diff(base: str) -> None:
-    import pandas as pd  # dependency
+    import pandas as pd
 
     f_bare = _p(base, "bareflux_shadow_diff_stats.csv")
     f_bloc = _p(base, "bloc4_shadow_diff_stats.csv")
@@ -92,7 +82,7 @@ Différence mean bare vs bloc4 sur b : {diff_mean:.2e} → quasi identique")
 
 
 def part2_riftlens(base: str) -> None:
-    import pandas as pd  # dependency
+    import pandas as pd
 
     f = _p(base, "riftlens_by_threshold.csv")
     if not _exists(f):
@@ -119,7 +109,7 @@ Conclusion :")
 
 
 def part3_voidmark(base: str) -> None:
-    import pandas as pd  # dependency
+    import pandas as pd
 
     f_stats = _p(base, "voidmark_run_stats.csv")
     f_glob = _p(base, "voidmark_global.json")
@@ -134,7 +124,7 @@ def part3_voidmark(base: str) -> None:
 
     print("=== Synthèse VoidMark ===")
     print(f"  Nombre de runs           : {glob.get('n_runs')}")
-    n_total = glob.get('n_total_values')
+    n_total = glob.get("n_total_values")
     print(f"  Valeurs totales          : {n_total:,}" if isinstance(n_total, int) else f"  Valeurs totales          : {n_total}")
     print(f"  Moyenne des moyennes     : {glob.get('mean_of_means'):+.6f}")
     print(f"  Variance des moyennes    : {glob.get('var_of_means'):.6f}")
@@ -153,7 +143,7 @@ Exemple run représentatif (entropie proche de la moyenne):")
 
 
 def part4_drift_score(base: str) -> None:
-    import pandas as pd  # dependency
+    import pandas as pd
 
     f_bare = _p(base, "bareflux_shadow_diff_stats.csv")
     if not _exists(f_bare):
@@ -167,7 +157,7 @@ def part4_drift_score(base: str) -> None:
         mean_abs = abs(float(row.get("mean", 0.0)))
         spread = float(row.get("q95", 0.0)) - float(row.get("q05", 0.0))
         entropy = float(row.get("entropy_bits", 0.0))
-        entropy_norm = entropy / 8.0  # borne grossière
+        entropy_norm = entropy / 8.0
         return round(0.5 * mean_abs + 0.3 * spread + 0.2 * entropy_norm, 4)
 
     df["drift_score"] = df.apply(drift_score, axis=1)

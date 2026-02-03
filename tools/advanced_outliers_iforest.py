@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Advanced (optional): outlier flagging sur deltas b via IsolationForest.
-- Ne casse pas si scikit-learn absent (sortie "skipped").
+- Ne casse pas si scikit-learn absent (status=skipped_no_sklearn)
 
 Usage:
   python tools/advanced_outliers_iforest.py --shadow "_bareflux_out/**/shadow_diff.json" --out _bareflux_out/b_outliers_iforest.json
@@ -64,7 +64,7 @@ def main():
     else:
         X = [[v] for v in vals]
         model = IsolationForest(contamination=args.contamination, random_state=0)
-        pred = model.fit_predict(X)  # -1 outlier, 1 inlier
+        pred = model.fit_predict(X)  # -1 outlier
         out = []
         for i, p in enumerate(pred):
             if p == -1:
@@ -75,6 +75,7 @@ def main():
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(rep, f, indent=2)
+
     print("OK", args.out)
 
 
