@@ -1,0 +1,8 @@
+# constraints.txt
+# Fichier de contraintes pour installs "stability pinned" en CI.
+#
+# Si tu veux pinner, ajoute ici des versions exactes, par ex :
+# requests==2.32.3
+# numpy==2.1.0
+#
+# (vide = pas de pinning, mais la CI ne casse pas)
