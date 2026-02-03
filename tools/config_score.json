@@ -1,0 +1,16 @@
+{
+  "thresholds": {
+    "green_max": 0.2,
+    "yellow_max": 0.5
+  },
+  "b_outlier_thresholds": [
+    0.05,
+    0.1,
+    0.2
+  ],
+  "score_formula": "effective_drift_v1",
+  "effective_drift_v1": {
+    "term1": "max(abs(mean_a), abs(mean_b))",
+    "term2": "0.5 * (q95_b - q05_b)"
+  }
+}

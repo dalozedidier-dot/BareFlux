@@ -1,0 +1,19 @@
+# GitHub Actions — steps à coller APRÈS `bareflux orchestrate ...`
+# Pré-requis: le dossier tools/ existe à la racine du repo.
+
+- name: BareFlux postprocess (fix n_edges + score drift + b readability)
+  run: |
+    python tools/bareflux_postprocess.py --out _bareflux_out --inplace
+
+- name: Dedup graph artifacts zips (optionnel)
+  run: |
+    python tools/dedup_artifacts.py --dir . --pattern "dd_graph_artifacts*.zip" --report _bareflux_out/dedup_report.json
+
+- name: Store BareFlux history (optionnel, keep=10)
+  run: |
+    python tools/store_history.py --out _bareflux_out --history .bareflux_history.jsonl --keep 10
+    python tools/trend_report.py --history .bareflux_history.jsonl --out _bareflux_out/bareflux_trend.csv
+
+# Insight optionnel:
+# - RiftLens sweep report (si tu as un dossier "riftlens_mass/")
+#   python tools/riftlens_sweep_report.py --root riftlens_mass --out_csv _bareflux_out/riftlens_sweep.csv --out_json _bareflux_out/riftlens_sweep.json

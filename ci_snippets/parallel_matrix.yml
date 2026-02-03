@@ -1,0 +1,12 @@
+# Exemple de matrix GitHub Actions (sharding)
+strategy:
+  fail-fast: false
+  matrix:
+    shard: [1, 2, 3, 4]
+
+steps:
+  - name: Run shard
+    run: |
+      echo "Shard ${{ matrix.shard }}"
+      # Exemple: passer le shard au runner (seed, subset, etc.)
+      python -m pytest -q --maxfail=1

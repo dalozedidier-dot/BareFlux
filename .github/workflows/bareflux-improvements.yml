@@ -1,0 +1,27 @@
+name: bareflux-improvements
+
+on:
+  workflow_dispatch:
+
+jobs:
+  postprocess:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps (minimal)
+        run: |
+          python -m pip install --upgrade pip
+          true
+
+      - name: Run BareFlux postprocess
+        run: |
+          python tools/bareflux_postprocess.py --out _bareflux_out --inplace
+
+      - name: Dedup artifacts (optional)
+        run: |
+          python tools/dedup_artifacts.py --dir . --pattern "dd_graph_artifacts*.zip" --report _bareflux_out/dedup_report.json || true

@@ -1,0 +1,9 @@
+# Exemple de step à coller dans un workflow GitHub Actions (après bareflux orchestrate)
+- name: BareFlux postprocess (low-hanging fruit)
+  run: |
+    python tools/bareflux_postprocess.py --out _bareflux_out --inplace
+
+# Optionnel: déduplication d'artefacts
+- name: Dedup graph artifacts zips
+  run: |
+    python tools/dedup_artifacts.py --dir . --pattern "dd_graph_artifacts*.zip" --report _bareflux_out/dedup_report.json
