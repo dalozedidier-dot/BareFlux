@@ -25,3 +25,8 @@ Optionnel :
   - Medium insight: VoidMark distances + RiftLens sweep + stabilité
   - Monitoring longitudinal: history JSONL + trend CSV
   - Advanced: IsolationForest (si scikit-learn) + mini HTML report
+
+Exemples (démonstration / article) :
+  - examples/README.md
+  - examples/extract_and_print.py
+  - examples/make_report_md.py
