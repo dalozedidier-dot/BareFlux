@@ -50,16 +50,22 @@ def _guess_time_col(df: pd.DataFrame) -> Optional[str]:
     return None
 
 
-def _load_series(df: pd.DataFrame, scfg: SeriesConfig) -> Tuple[pd.Series, Optional[pd.Series], List[str]]:
+def _load_series(
+    df: pd.DataFrame, scfg: SeriesConfig
+) -> Tuple[pd.Series, Optional[pd.Series], List[str]]:
     warnings: List[str] = []
     if scfg.value_col not in df.columns:
-        raise ValueError(f"value_col '{scfg.value_col}' not found in input columns: {list(df.columns)}")
+        raise ValueError(
+            f"value_col '{scfg.value_col}' not found in input columns: {list(df.columns)}"
+        )
 
     y = pd.to_numeric(df[scfg.value_col], errors="coerce")
     t = None
     if scfg.time_col:
         if scfg.time_col not in df.columns:
-            warnings.append(f"time_col '{scfg.time_col}' not found; using row index as time")
+            warnings.append(
+                f"time_col '{scfg.time_col}' not found; using row index as time"
+            )
         else:
             t = df[scfg.time_col].astype(str)
     return y, t, warnings
@@ -93,7 +99,21 @@ def _describe(y: pd.Series) -> Dict[str, Any]:
         "missing_count": int(np.isnan(arr).sum()),
     }
     if len(finite) == 0:
-        stats.update({k: None for k in ["mean", "std", "min", "max", "median", "p05", "p95", "trend_slope"]})
+        stats.update(
+            {
+                k: None
+                for k in [
+                    "mean",
+                    "std",
+                    "min",
+                    "max",
+                    "median",
+                    "p05",
+                    "p95",
+                    "trend_slope",
+                ]
+            }
+        )
         return stats
 
     stats.update(
@@ -111,7 +131,9 @@ def _describe(y: pd.Series) -> Dict[str, Any]:
     return stats
 
 
-def _rupture_marks(y: pd.Series, t: Optional[pd.Series], z_threshold: float) -> pd.DataFrame:
+def _rupture_marks(
+    y: pd.Series, t: Optional[pd.Series], z_threshold: float
+) -> pd.DataFrame:
     # Minimal detector: z-score of first differences
     dy = y.diff()
     arr = dy.to_numpy(dtype=float)
@@ -131,8 +153,16 @@ def _rupture_marks(y: pd.Series, t: Optional[pd.Series], z_threshold: float) -> 
             {
                 "idx": int(i),
                 "time": (t.iloc[i] if t is not None and i < len(t) else ""),
-                "value": (float(y.iloc[i]) if i < len(y) and pd.notna(y.iloc[i]) else float("nan")),
-                "diff": (float(dy.iloc[i]) if i < len(dy) and pd.notna(dy.iloc[i]) else float("nan")),
+                "value": (
+                    float(y.iloc[i])
+                    if i < len(y) and pd.notna(y.iloc[i])
+                    else float("nan")
+                ),
+                "diff": (
+                    float(dy.iloc[i])
+                    if i < len(dy) and pd.notna(dy.iloc[i])
+                    else float("nan")
+                ),
                 "z": float(z[i]),
                 "kind": "diff_spike",
             }
@@ -170,7 +200,9 @@ def _zip_dir(zip_path: Path, root_dir: Path, rel_paths: List[Path]) -> None:
             zf.write(abs_path, rel.as_posix())
 
 
-def _series_config_from_config(config: Dict[str, Any], input_csv: Path, df: pd.DataFrame) -> Tuple[SeriesConfig, Dict[str, Any]]:
+def _series_config_from_config(
+    config: Dict[str, Any], input_csv: Path, df: pd.DataFrame
+) -> Tuple[SeriesConfig, Dict[str, Any]]:
     # Minimal supported config:
     # {
     #   "series_name": "minimal",
@@ -187,10 +219,14 @@ def _series_config_from_config(config: Dict[str, Any], input_csv: Path, df: pd.D
         time_col = _guess_time_col(df)
     rupture = config.get("rupture") or {}
     z_threshold = float(rupture.get("z_threshold", 3.0))
-    return SeriesConfig(name=name, value_col=value_col, time_col=time_col), {"z_threshold": z_threshold}
+    return SeriesConfig(name=name, value_col=value_col, time_col=time_col), {
+        "z_threshold": z_threshold
+    }
 
 
-def run_observer(input_csv: Path, output_root: Path, config: Dict[str, Any], cli_argv=None) -> Path:
+def run_observer(
+    input_csv: Path, output_root: Path, config: Dict[str, Any], cli_argv=None
+) -> Path:
     if not input_csv.exists():
         raise SystemExit(f"Input not found: {input_csv}")
 
@@ -228,8 +264,16 @@ def run_observer(input_csv: Path, output_root: Path, config: Dict[str, Any], cli
             "tool": "ApexObserver",
             "version": "0.1.0",
             "series_name": series_cfg.name,
-            "input": {"csv": str(input_csv), "value_col": series_cfg.value_col, "time_col": series_cfg.time_col},
-            "rupture": {"method": "zscore_first_diff", "z_threshold": rupture_cfg["z_threshold"], "count": int(len(ruptures))},
+            "input": {
+                "csv": str(input_csv),
+                "value_col": series_cfg.value_col,
+                "time_col": series_cfg.time_col,
+            },
+            "rupture": {
+                "method": "zscore_first_diff",
+                "z_threshold": rupture_cfg["z_threshold"],
+                "count": int(len(ruptures)),
+            },
             "stats": stats,
             "generated_at_utc": ts.isoformat(),
         }
@@ -241,9 +285,21 @@ def run_observer(input_csv: Path, output_root: Path, config: Dict[str, Any], cli
     except Exception as e:
         errors.append(str(e))
         # Still write placeholder files so the run folder is structurally consistent.
-        _write_json(series_dir / "report.json", {"tool": "ApexObserver", "version": "0.1.0", "series_name": series_cfg.name, "error": str(e)})
-        pd.DataFrame([["error", str(e)]], columns=["feature", "value"]).to_csv(series_dir / "features.csv", index=False)
-        pd.DataFrame(columns=["idx", "time", "value", "diff", "z", "kind"]).to_csv(series_dir / "rupture_marks.csv", index=False)
+        _write_json(
+            series_dir / "report.json",
+            {
+                "tool": "ApexObserver",
+                "version": "0.1.0",
+                "series_name": series_cfg.name,
+                "error": str(e),
+            },
+        )
+        pd.DataFrame([["error", str(e)]], columns=["feature", "value"]).to_csv(
+            series_dir / "features.csv", index=False
+        )
+        pd.DataFrame(columns=["idx", "time", "value", "diff", "z", "kind"]).to_csv(
+            series_dir / "rupture_marks.csv", index=False
+        )
 
     _write_json(series_dir / "errors.json", {"errors": errors, "warnings": warnings})
 
@@ -253,7 +309,11 @@ def run_observer(input_csv: Path, output_root: Path, config: Dict[str, Any], cli
         "version": "0.1.0",
         "run_id": run_id,
         "created_at_utc": ts.isoformat(),
-        "command": " ".join(["apexobserver"] + (cli_argv or [])) if cli_argv is not None else "apexobserver run",
+        "command": (
+            " ".join(["apexobserver"] + (cli_argv or []))
+            if cli_argv is not None
+            else "apexobserver run"
+        ),
         "inputs": [{"path": f"inputs/{input_csv.name}", "kind": "csv"}],
         "config": {"path": "config_used.json"},
         "series": [

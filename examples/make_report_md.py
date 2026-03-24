@@ -14,7 +14,9 @@ from pathlib import Path
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--path", default=".", help="Dossier où se trouvent les fichiers stats.")
+    ap.add_argument(
+        "--path", default=".", help="Dossier où se trouvent les fichiers stats."
+    )
     ap.add_argument("--out", default="bareflux_report.md")
     args = ap.parse_args()
 
@@ -28,8 +30,10 @@ def main() -> None:
     csv_path = base / "bareflux_shadow_diff_stats.csv"
     if csv_path.exists():
         import pandas as pd
+
         df = pd.read_csv(csv_path)
         if "column" in df.columns:
+
             def row(col):
                 r = df[df["column"] == col]
                 return None if r.empty else r.iloc[0]
@@ -54,6 +58,7 @@ def main() -> None:
     rift_path = base / "riftlens_by_threshold.csv"
     if rift_path.exists():
         import pandas as pd
+
         df = pd.read_csv(rift_path)
         if "nodes_mean" in df.columns:
             rl_nodes = float(df["nodes_mean"].mean())
@@ -88,7 +93,9 @@ def main() -> None:
     md.append("")
     md.append("### RiftLens")
     if rl_nodes is not None and rl_edges is not None:
-        md.append(f"- Moyennes sur seuils : **{rl_nodes:.1f} nœuds**, **{rl_edges:.1f} arêtes**")
+        md.append(
+            f"- Moyennes sur seuils : **{rl_nodes:.1f} nœuds**, **{rl_edges:.1f} arêtes**"
+        )
     if rl_edgew is not None:
         md.append(f"- Poids moyen des arêtes : **{rl_edgew:.5f}**")
     md.append("")

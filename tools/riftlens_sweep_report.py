@@ -46,25 +46,33 @@ def main():
     ap.add_argument("--out_json", default="riftlens_sweep.json")
     args = ap.parse_args()
 
-    files = glob.glob(os.path.join(args.root, "run_*", "**", "graph_report.json"), recursive=True)
+    files = glob.glob(
+        os.path.join(args.root, "run_*", "**", "graph_report.json"), recursive=True
+    )
     rows = []
     for fp in files:
         if "thr_" not in fp:
             continue
         parts = fp.split(os.sep)
         run = next((p for p in parts if p.startswith("run_")), "run_unknown")
-        thr = next((p for p in parts if p.startswith("thr_")), "thr_unknown").replace("thr_", "")
+        thr = next((p for p in parts if p.startswith("thr_")), "thr_unknown").replace(
+            "thr_", ""
+        )
         gr = load_json(fp)
-        rows.append({
-            "run": run,
-            "threshold": thr,
-            "n_nodes": gr.get("n_nodes"),
-            "n_edges": gr.get("n_edges"),
-            "top3_edges": json.dumps(edge_top3(gr.get("edges", []))),
-        })
+        rows.append(
+            {
+                "run": run,
+                "threshold": thr,
+                "n_nodes": gr.get("n_nodes"),
+                "n_edges": gr.get("n_edges"),
+                "top3_edges": json.dumps(edge_top3(gr.get("edges", []))),
+            }
+        )
 
     with open(args.out_csv, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=["run", "threshold", "n_nodes", "n_edges", "top3_edges"])
+        w = csv.DictWriter(
+            f, fieldnames=["run", "threshold", "n_nodes", "n_edges", "top3_edges"]
+        )
         w.writeheader()
         w.writerows(rows)
 

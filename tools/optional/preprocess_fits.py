@@ -12,6 +12,7 @@ def _import_astropy():
     try:
         from astropy.io import fits  # type: ignore
         from astropy.time import Time  # type: ignore
+
         return fits, Time
     except Exception as e:
         raise RuntimeError(
@@ -59,7 +60,12 @@ def extract_basic_features(image: np.ndarray) -> Dict[str, float]:
 
     total = float(np.sum(img))
     if total == 0.0:
-        return {"flux": 0.0, "centroid_x": float("nan"), "centroid_y": float("nan"), "fwhm": float("nan")}
+        return {
+            "flux": 0.0,
+            "centroid_x": float("nan"),
+            "centroid_y": float("nan"),
+            "fwhm": float("nan"),
+        }
 
     yy, xx = np.indices(img.shape)
     cx = float(np.sum(xx * img) / total)
@@ -79,20 +85,37 @@ def extract_features_from_fits_files(files: Iterable[Path]) -> pd.DataFrame:
     for idx, fp in enumerate(files):
         with fits.open(fp) as hdul:
             img, header = _find_first_ndarray(hdul)
-        feats = extract_basic_features(img) if img.size else {"flux": 0.0, "centroid_x": float("nan"), "centroid_y": float("nan"), "fwhm": float("nan")}
+        feats = (
+            extract_basic_features(img)
+            if img.size
+            else {
+                "flux": 0.0,
+                "centroid_x": float("nan"),
+                "centroid_y": float("nan"),
+                "fwhm": float("nan"),
+            }
+        )
         t = _safe_time_from_header(header)
         rows.append({"t": t if t is not None else idx, "file": str(fp), **feats})
     return pd.DataFrame(rows)
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Pré-traitement FITS optionnel: extraction descriptive vers CSV.")
-    ap.add_argument("--input", type=str, required=True, help="Fichier FITS ou glob, ex data/*.fits")
+    ap = argparse.ArgumentParser(
+        description="Pré-traitement FITS optionnel: extraction descriptive vers CSV."
+    )
+    ap.add_argument(
+        "--input", type=str, required=True, help="Fichier FITS ou glob, ex data/*.fits"
+    )
     ap.add_argument("--out-csv", type=str, required=True, help="Chemin CSV de sortie")
     args = ap.parse_args()
 
     pattern = args.input
-    paths = sorted([Path(p) for p in Path().glob(pattern)]) if any(ch in pattern for ch in "*?[]") else [Path(pattern)]
+    paths = (
+        sorted([Path(p) for p in Path().glob(pattern)])
+        if any(ch in pattern for ch in "*?[]")
+        else [Path(pattern)]
+    )
     paths = [p for p in paths if p.exists()]
 
     if not paths:

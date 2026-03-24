@@ -68,7 +68,9 @@ def part1_shadow_diff(base: str) -> None:
             f"q75 = {float(g('q75')):+.4f} | q95 = {float(g('q95')):+.4f}"
         )
     if all(k in b.index for k in ["min", "max"]):
-        print(f"  Extrêmes          : min = {float(g('min')):+.4f} | max = {float(g('max')):+.4f}")
+        print(
+            f"  Extrêmes          : min = {float(g('min')):+.4f} | max = {float(g('max')):+.4f}"
+        )
     if "entropy_bits" in b.index:
         print(f"  Entropie discrète : {float(g('entropy_bits')):.3f} bits")
 
@@ -76,8 +78,9 @@ def part1_shadow_diff(base: str) -> None:
         df_bloc = pd.read_csv(f_bloc)
         b2 = df_bloc[df_bloc["column"] == "b"].iloc[0]
         diff_mean = abs(float(b2.get("mean", 0.0)) - float(g("mean", 0.0)))
-        print(f"
-Différence mean bare vs bloc4 sur b : {diff_mean:.2e} → quasi identique")
+        print(
+            f"\nDifférence mean bare vs bloc4 sur b : {diff_mean:.2e} → quasi identique"
+        )
     print()
 
 
@@ -90,7 +93,15 @@ def part2_riftlens(base: str) -> None:
         return
 
     df = pd.read_csv(f)
-    cols = ["thr", "nodes_mean", "nodes_std", "edges_mean", "edges_std", "edges_p50", "edgew_mean"]
+    cols = [
+        "thr",
+        "nodes_mean",
+        "nodes_std",
+        "edges_mean",
+        "edges_std",
+        "edges_p50",
+        "edgew_mean",
+    ]
 
     print("=== Stabilité RiftLens par seuil ===")
     missing = [c for c in cols if c not in df.columns]
@@ -100,8 +111,7 @@ def part2_riftlens(base: str) -> None:
         return
 
     print(df[cols].round(4).to_string(index=False))
-    print("
-Conclusion :")
+    print("\nConclusion :")
     if (df["nodes_std"] == 0).all() and (df["edges_std"] == 0).all():
         print("  → nœuds/arêtes invariants sur les seuils présents.")
     print(f"  → edgew_mean moyen: {df['edgew_mean'].mean():.5f}")
@@ -125,7 +135,11 @@ def part3_voidmark(base: str) -> None:
     print("=== Synthèse VoidMark ===")
     print(f"  Nombre de runs           : {glob.get('n_runs')}")
     n_total = glob.get("n_total_values")
-    print(f"  Valeurs totales          : {n_total:,}" if isinstance(n_total, int) else f"  Valeurs totales          : {n_total}")
+    print(
+        f"  Valeurs totales          : {n_total:,}"
+        if isinstance(n_total, int)
+        else f"  Valeurs totales          : {n_total}"
+    )
     print(f"  Moyenne des moyennes     : {glob.get('mean_of_means'):+.6f}")
     print(f"  Variance des moyennes    : {glob.get('var_of_means'):.6f}")
     print(f"  Médiane des médianes     : {glob.get('median_of_medians'):+.6f}")
@@ -135,9 +149,12 @@ def part3_voidmark(base: str) -> None:
         target = float(glob.get("mean_entropy_bits", 0.0))
         idx = (df["entropy_bits"] - target).abs().argsort()[:1]
         closest = df.iloc[idx]
-        show = [c for c in ["run", "mean", "std", "median", "entropy_bits"] if c in closest.columns]
-        print("
-Exemple run représentatif (entropie proche de la moyenne):")
+        show = [
+            c
+            for c in ["run", "mean", "std", "median", "entropy_bits"]
+            if c in closest.columns
+        ]
+        print("\nExemple run représentatif (entropie proche de la moyenne):")
         print(closest[show].to_string(index=False))
     print()
 
@@ -161,7 +178,11 @@ def part4_drift_score(base: str) -> None:
         return round(0.5 * mean_abs + 0.3 * spread + 0.2 * entropy_norm, 4)
 
     df["drift_score"] = df.apply(drift_score, axis=1)
-    cols = [c for c in ["column", "mean", "q95", "q05", "entropy_bits", "drift_score"] if c in df.columns]
+    cols = [
+        c
+        for c in ["column", "mean", "q95", "q05", "entropy_bits", "drift_score"]
+        if c in df.columns
+    ]
 
     print("=== Score composite de dérive (simple) ===")
     print(df[cols].sort_values("drift_score", ascending=False).to_string(index=False))
@@ -170,7 +191,9 @@ def part4_drift_score(base: str) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--path", default=".", help="Dossier contenant les CSV/JSON (ou _bareflux_out).")
+    ap.add_argument(
+        "--path", default=".", help="Dossier contenant les CSV/JSON (ou _bareflux_out)."
+    )
     args = ap.parse_args()
 
     base = args.path

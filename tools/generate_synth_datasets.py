@@ -5,9 +5,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+
 def main() -> None:
-    p = argparse.ArgumentParser(description="Génère des CSV synthétiques (bloc 4) pour tests de stabilité.")
-    p.add_argument("--out-dir", type=str, default="_ci_out/datasets", help="Dossier de sortie")
+    p = argparse.ArgumentParser(
+        description="Génère des CSV synthétiques (bloc 4) pour tests de stabilité."
+    )
+    p.add_argument(
+        "--out-dir", type=str, default="_ci_out/datasets", help="Dossier de sortie"
+    )
     p.add_argument("--n", type=int, default=200, help="Nombre de lignes")
     p.add_argument("--seed", type=int, default=42, help="Seed RNG")
     args = p.parse_args()
@@ -30,7 +35,9 @@ def main() -> None:
     df_multi.to_csv(out / "multi.csv", index=False)
 
     # NullTrace previous/current : rupture contrôlée
-    base = pd.DataFrame({"t": t, "a": rng.normal(0, 1, size=n), "b": rng.normal(0, 1, size=n)})
+    base = pd.DataFrame(
+        {"t": t, "a": rng.normal(0, 1, size=n), "b": rng.normal(0, 1, size=n)}
+    )
     prev = base.copy()
     curr = base.copy()
     curr.loc[mid:, "a"] = curr.loc[mid:, "a"] + 0.25
@@ -40,6 +47,7 @@ def main() -> None:
     curr.to_csv(out / "current.csv", index=False)
 
     print(f"datasets_written={out.resolve()}")
+
 
 if __name__ == "__main__":
     main()

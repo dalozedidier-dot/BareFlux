@@ -49,8 +49,14 @@ code {{ background: #f6f6f6; padding: 2px 6px; border-radius: 6px; }}
 </html>
 """
 
+
 def img_tag(path):
-    return f'<img src="{path}" alt="{path}"/>' if os.path.exists(path) else "<p>(image absente)</p>"
+    return (
+        f'<img src="{path}" alt="{path}"/>'
+        if os.path.exists(path)
+        else "<p>(image absente)</p>"
+    )
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -64,9 +70,10 @@ def main():
 
     html = TEMPLATE.format(outdir=outdir, img_b=img_b, img_graph=img_graph)
     os.makedirs(os.path.dirname(args.html) or ".", exist_ok=True)
-    with open(args.html,"w",encoding="utf-8") as f:
+    with open(args.html, "w", encoding="utf-8") as f:
         f.write(html)
     print("OK", args.html)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()

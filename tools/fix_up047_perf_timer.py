@@ -30,10 +30,18 @@ from pathlib import Path
 
 DEF_RE = re.compile(r"^(\s*)def\s+perf_timer\s*\(", re.M)
 
-PARAMSPEC_RE = re.compile(r'^\s*(?P<name>_?[A-Z][A-Za-z0-9_]*)\s*=\s*ParamSpec\(\s*["\'](?P=name)["\']\s*\)\s*$', re.M)
-TYPEVAR_RE = re.compile(r'^\s*(?P<name>_?[A-Z][A-Za-z0-9_]*)\s*=\s*TypeVar\(\s*["\'](?P=name)["\']', re.M)
+PARAMSPEC_RE = re.compile(
+    r'^\s*(?P<name>_?[A-Z][A-Za-z0-9_]*)\s*=\s*ParamSpec\(\s*["\'](?P=name)["\']\s*\)\s*$',
+    re.M,
+)
+TYPEVAR_RE = re.compile(
+    r'^\s*(?P<name>_?[A-Z][A-Za-z0-9_]*)\s*=\s*TypeVar\(\s*["\'](?P=name)["\']', re.M
+)
 
-def _remove_adjacent_typevars(text: str, def_pos: int, window: int = 20) -> tuple[str, str, str]:
+
+def _remove_adjacent_typevars(
+    text: str, def_pos: int, window: int = 20
+) -> tuple[str, str, str]:
     """
     Try to find ParamSpec + TypeVar definitions immediately above perf_timer within `window` lines.
     Returns (new_text, P_name, R_name) where names default to ("P","R") if not found.
@@ -66,10 +74,18 @@ def _remove_adjacent_typevars(text: str, def_pos: int, window: int = 20) -> tupl
         removed_P = removed_R = False
         for i in range(len(lines)):
             ln = lines[i]
-            if i < def_line_idx and not removed_P and re.match(rf'^\s*{re.escape(P_name)}\s*=\s*ParamSpec\(', ln):
+            if (
+                i < def_line_idx
+                and not removed_P
+                and re.match(rf"^\s*{re.escape(P_name)}\s*=\s*ParamSpec\(", ln)
+            ):
                 removed_P = True
                 continue
-            if i < def_line_idx and not removed_R and re.match(rf'^\s*{re.escape(R_name)}\s*=\s*TypeVar\(', ln):
+            if (
+                i < def_line_idx
+                and not removed_R
+                and re.match(rf"^\s*{re.escape(R_name)}\s*=\s*TypeVar\(", ln)
+            ):
                 removed_R = True
                 continue
             new_lines.append(ln)
@@ -77,13 +93,16 @@ def _remove_adjacent_typevars(text: str, def_pos: int, window: int = 20) -> tupl
 
     return (text, P_name or "P", R_name or "R")
 
+
 def _pep695ize_perf_timer(text: str, P_name: str, R_name: str) -> str:
     # Replace "def perf_timer(" with "def perf_timer[**P, R]("
     # Keep indentation.
     def repl(m):
         indent = m.group(1)
         return f"{indent}def perf_timer[**{P_name}, {R_name}]("
+
     return DEF_RE.sub(repl, text, count=1)
+
 
 def _cleanup_imports(text: str) -> str:
     # If ParamSpec/TypeVar no longer used, remove them from `from typing import ...` lines.
@@ -126,6 +145,7 @@ def _cleanup_imports(text: str) -> str:
             out.append(ln)
     return "".join(out)
 
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--file", default="common/utils.py")
@@ -156,6 +176,7 @@ def main():
 
     path.write_text(text4, encoding="utf-8")
     print("OK (patched)", path)
+
 
 if __name__ == "__main__":
     main()

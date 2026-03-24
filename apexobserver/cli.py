@@ -13,8 +13,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     runp = sub.add_parser("run", help="Run observer on a CSV input")
     runp.add_argument("--input", required=True, help="Path to input CSV")
-    runp.add_argument("--output", required=True, help="Output directory (run_* will be created inside)")
-    runp.add_argument("--config", required=False, default=None, help="Path to JSON config (optional)")
+    runp.add_argument(
+        "--output",
+        required=True,
+        help="Output directory (run_* will be created inside)",
+    )
+    runp.add_argument(
+        "--config", required=False, default=None, help="Path to JSON config (optional)"
+    )
 
     schemap = sub.add_parser("schemas", help="Print available JSON schema paths")
     schemap.add_argument("--json", action="store_true", help="Output as JSON")
@@ -66,7 +72,9 @@ def main(argv=None) -> int:
                 rep_path = s / "report.json"
                 if rep_path.exists():
                     rep = json.loads(rep_path.read_text(encoding="utf-8"))
-                    series_reports.append({"series": s.name, "status": rep.get("status", "")})
+                    series_reports.append(
+                        {"series": s.name, "status": rep.get("status", "")}
+                    )
                     if rep.get("status") not in ("ok", ""):
                         status = rep.get("status", status)
         except Exception:
@@ -78,7 +86,10 @@ def main(argv=None) -> int:
             "status": status,
             "series": series_reports,
         }
-        (run_dir / "report.json").write_text(json.dumps(run_report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        (run_dir / "report.json").write_text(
+            json.dumps(run_report, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
 
         # Minimal batch_manifest.json at output root
         batch = {
@@ -86,7 +97,9 @@ def main(argv=None) -> int:
             "utc_created": datetime.now(timezone.utc).isoformat(),
             "runs": [{"run_dir": run_dir.name, "status": status}],
         }
-        (output_root / "batch_manifest.json").write_text(json.dumps(batch, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        (output_root / "batch_manifest.json").write_text(
+            json.dumps(batch, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
         return 0
 
     p.error("Unknown command")
@@ -95,4 +108,3 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

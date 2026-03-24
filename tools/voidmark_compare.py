@@ -35,9 +35,20 @@ def main():
     b = load_list(args.curr)
 
     rep = {
-        "prev": {"n": len(a), "mean": mean(a) if a else None, "std": pstdev(a) if len(a) > 1 else 0.0},
-        "curr": {"n": len(b), "mean": mean(b) if b else None, "std": pstdev(b) if len(b) > 1 else 0.0},
-        "distances": {"wasserstein_1d": wasserstein_1d(a, b), "energy": energy_distance(a, b)},
+        "prev": {
+            "n": len(a),
+            "mean": mean(a) if a else None,
+            "std": pstdev(a) if len(a) > 1 else 0.0,
+        },
+        "curr": {
+            "n": len(b),
+            "mean": mean(b) if b else None,
+            "std": pstdev(b) if len(b) > 1 else 0.0,
+        },
+        "distances": {
+            "wasserstein_1d": wasserstein_1d(a, b),
+            "energy": energy_distance(a, b),
+        },
     }
 
     with open(args.out, "w", encoding="utf-8") as f:

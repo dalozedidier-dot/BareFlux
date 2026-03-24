@@ -19,7 +19,20 @@ def test_run_observer_creates_auditable_bundle(tmp_path: Path):
     config = load_json_file(repo_root / "examples" / "apex.json")
 
     out_root = tmp_path / "_apex_out"
-    run_dir = run_observer(input_csv=input_csv, output_root=out_root, config=config, cli_argv=["run", "--input", str(input_csv), "--output", str(out_root), "--config", str(repo_root / "examples" / "apex.json")])
+    run_dir = run_observer(
+        input_csv=input_csv,
+        output_root=out_root,
+        config=config,
+        cli_argv=[
+            "run",
+            "--input",
+            str(input_csv),
+            "--output",
+            str(out_root),
+            "--config",
+            str(repo_root / "examples" / "apex.json"),
+        ],
+    )
 
     assert run_dir.exists()
     assert (run_dir / "run_manifest.json").exists()
@@ -33,8 +46,12 @@ def test_run_observer_creates_auditable_bundle(tmp_path: Path):
 
     # Validate schemas
     schemas_dir = repo_root / "apexobserver" / "schemas"
-    manifest_schema = json.loads((schemas_dir / "run_manifest.schema.json").read_text(encoding="utf-8"))
-    report_schema = json.loads((schemas_dir / "report.schema.json").read_text(encoding="utf-8"))
+    manifest_schema = json.loads(
+        (schemas_dir / "run_manifest.schema.json").read_text(encoding="utf-8")
+    )
+    report_schema = json.loads(
+        (schemas_dir / "report.schema.json").read_text(encoding="utf-8")
+    )
 
     manifest = json.loads((run_dir / "run_manifest.json").read_text(encoding="utf-8"))
     validate(manifest, manifest_schema)

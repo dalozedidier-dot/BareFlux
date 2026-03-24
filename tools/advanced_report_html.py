@@ -25,18 +25,21 @@ def main():
     items.sort()
 
     lines = []
-    lines.append("<html><head><meta charset='utf-8'><title>BareFlux Report</title></head><body>")
+    lines.append(
+        "<html><head><meta charset='utf-8'><title>BareFlux Report</title></head><body>"
+    )
     lines.append("<h1>BareFlux Report</h1>")
     lines.append("<p>Fichiers générés:</p><ul>")
     for fp in items:
         name = os.path.basename(fp)
-        lines.append(f"<li><a href='{_html.escape(name)}'>{_html.escape(name)}</a></li>")
+        lines.append(
+            f"<li><a href='{_html.escape(name)}'>{_html.escape(name)}</a></li>"
+        )
     lines.append("</ul></body></html>")
 
     os.makedirs(os.path.dirname(args.html), exist_ok=True)
     with open(args.html, "w", encoding="utf-8") as f:
-        f.write("
-".join(lines))
+        f.write("\n".join(lines))
 
     print("OK", args.html)
 

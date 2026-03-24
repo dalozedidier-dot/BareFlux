@@ -7,7 +7,9 @@ T = TypeVar("T")
 R = TypeVar("R")
 
 
-def parallel_map(func: Callable[[T], R], items: Sequence[T], max_workers: Optional[int] = None) -> List[R]:
+def parallel_map(
+    func: Callable[[T], R], items: Sequence[T], max_workers: Optional[int] = None
+) -> List[R]:
     """Parallélisme massif minimal (stdlib), sans dépendances lourdes."""
     results: List[R] = []
     with ProcessPoolExecutor(max_workers=max_workers) as ex:

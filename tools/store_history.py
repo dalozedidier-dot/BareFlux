@@ -74,18 +74,15 @@ def main():
     Path(os.path.dirname(args.history) or ".").mkdir(parents=True, exist_ok=True)
 
     with open(args.history, "a", encoding="utf-8") as f:
-        f.write(json.dumps(point) + "
-")
+        f.write(json.dumps(point) + "\n")
 
     with open(args.history, "r", encoding="utf-8") as f:
         lines = f.read().splitlines()
 
     if len(lines) > args.keep:
-        lines = lines[-args.keep:]
+        lines = lines[-args.keep :]
         with open(args.history, "w", encoding="utf-8") as f:
-            f.write("
-".join(lines) + "
-")
+            f.write("\n".join(lines) + "\n")
 
     print("OK", args.history, "n=", len(lines))
 

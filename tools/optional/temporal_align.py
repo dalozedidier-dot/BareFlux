@@ -21,7 +21,9 @@ class ObserverLocation:
     height_m: float = 0.0
 
 
-def barycentric_correct_jd(times_jd: Sequence[float], ra_deg: float, dec_deg: float, location: ObserverLocation) -> np.ndarray:
+def barycentric_correct_jd(
+    times_jd: Sequence[float], ra_deg: float, dec_deg: float, location: ObserverLocation
+) -> np.ndarray:
     """Correction barycentrique avec astropy si installé.
 
     Important: ce module est optionnel. Le core ne dépend pas de cette fonction.
@@ -36,7 +38,16 @@ def barycentric_correct_jd(times_jd: Sequence[float], ra_deg: float, dec_deg: fl
             "Ce module est optionnel et ne fait pas partie du core."
         ) from e
 
-    t = Time(np.asarray(times_jd, dtype=float), format="jd", scale="utc", location=EarthLocation(lon=location.lon_deg * u.deg, lat=location.lat_deg * u.deg, height=location.height_m * u.m))
+    t = Time(
+        np.asarray(times_jd, dtype=float),
+        format="jd",
+        scale="utc",
+        location=EarthLocation(
+            lon=location.lon_deg * u.deg,
+            lat=location.lat_deg * u.deg,
+            height=location.height_m * u.m,
+        ),
+    )
     target = SkyCoord(ra=ra_deg * u.deg, dec=dec_deg * u.deg, frame="icrs")
 
     ltt = t.light_travel_time(target, kind="barycentric")

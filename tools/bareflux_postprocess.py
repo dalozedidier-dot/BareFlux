@@ -102,7 +102,11 @@ def compute_stats(vals):
         "q95": q95,
         "mad": mad_v,
         "iqr": iqr_v,
-        "iqr_over_mad": (iqr_v / mad_v) if (mad_v and not math.isnan(mad_v) and mad_v != 0) else None,
+        "iqr_over_mad": (
+            (iqr_v / mad_v)
+            if (mad_v and not math.isnan(mad_v) and mad_v != 0)
+            else None
+        ),
         "min": s[0],
         "max": s[-1],
     }
@@ -110,7 +114,12 @@ def compute_stats(vals):
 
 def effective_drift(stats_a, stats_b):
     # dérive effective = max(|mean_a|, |mean_b|) + 0.5*(q95_b - q05_b)
-    if not stats_a or not stats_b or stats_a.get("n", 0) == 0 or stats_b.get("n", 0) == 0:
+    if (
+        not stats_a
+        or not stats_b
+        or stats_a.get("n", 0) == 0
+        or stats_b.get("n", 0) == 0
+    ):
         return None
     term1 = max(abs(stats_a.get("mean", 0.0)), abs(stats_b.get("mean", 0.0)))
     term2 = 0.5 * (stats_b.get("q95", 0.0) - stats_b.get("q05", 0.0))
@@ -129,10 +138,26 @@ def colorize(score, green_max, yellow_max):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default="_bareflux_out", help="Output directory produced by bareflux orchestrate")
-    ap.add_argument("--config", default="tools/config_score.json", help="Config JSON (thresholds, etc.)")
-    ap.add_argument("--inplace", action="store_true", help="Overwrite summary file if exists (default: write patched copy)")
-    ap.add_argument("--skip-if-missing", action="store_true", help="Exit 0 (status=skipped) if required inputs are missing")
+    ap.add_argument(
+        "--out",
+        default="_bareflux_out",
+        help="Output directory produced by bareflux orchestrate",
+    )
+    ap.add_argument(
+        "--config",
+        default="tools/config_score.json",
+        help="Config JSON (thresholds, etc.)",
+    )
+    ap.add_argument(
+        "--inplace",
+        action="store_true",
+        help="Overwrite summary file if exists (default: write patched copy)",
+    )
+    ap.add_argument(
+        "--skip-if-missing",
+        action="store_true",
+        help="Exit 0 (status=skipped) if required inputs are missing",
+    )
     args = ap.parse_args()
 
     out_dir = args.out
@@ -147,7 +172,10 @@ def main():
         if args.skip_if_missing:
             ci_status_path = os.path.join(out_dir, "bareflux_ci_status.json")
             Path(out_dir).mkdir(parents=True, exist_ok=True)
-            write_json(ci_status_path, {"status": "skipped_missing_shadow_diff", "out_dir": out_dir})
+            write_json(
+                ci_status_path,
+                {"status": "skipped_missing_shadow_diff", "out_dir": out_dir},
+            )
             print("SKIPPED: shadow_diff.json missing")
             return
         raise SystemExit(f"shadow_diff.json introuvable sous {out_dir}")
@@ -177,16 +205,22 @@ def main():
     graph_report_path = os.path.join(out_dir, "riftlens", "graph_report.json")
     graph = load_json(graph_report_path) if os.path.exists(graph_report_path) else None
 
-    summary_path = find_one([
-        os.path.join(out_dir, "**", "*orchestration_summary*.json"),
-        os.path.join(out_dir, "**", "*summary*.json"),
-    ])
+    summary_path = find_one(
+        [
+            os.path.join(out_dir, "**", "*orchestration_summary*.json"),
+            os.path.join(out_dir, "**", "*summary*.json"),
+        ]
+    )
     summary = load_json(summary_path) if summary_path else {}
 
     if graph is not None:
         summary.setdefault("riftlens", {})
-        summary["riftlens"]["n_nodes"] = graph.get("n_nodes", summary["riftlens"].get("n_nodes"))
-        summary["riftlens"]["n_edges"] = graph.get("n_edges", summary["riftlens"].get("n_edges"))
+        summary["riftlens"]["n_nodes"] = graph.get(
+            "n_nodes", summary["riftlens"].get("n_nodes")
+        )
+        summary["riftlens"]["n_edges"] = graph.get(
+            "n_edges", summary["riftlens"].get("n_edges")
+        )
 
     score = effective_drift(stats["a"], stats["b"])
     status = colorize(score, green_max, yellow_max)
@@ -197,10 +231,18 @@ def main():
     summary["drift"]["thresholds"] = {"green_max": green_max, "yellow_max": yellow_max}
 
     summary.setdefault("shadow_diff", {})
-    summary["shadow_diff"]["columns"] = {"a": stats["a"], "b": stats["b"], "t": stats["t"]}
+    summary["shadow_diff"]["columns"] = {
+        "a": stats["a"],
+        "b": stats["b"],
+        "t": stats["t"],
+    }
     summary["shadow_diff"]["b_readability"] = b_read
 
-    ci_status = {"score_effective_v1": score, "status": status, "thresholds": {"green_max": green_max, "yellow_max": yellow_max}}
+    ci_status = {
+        "score_effective_v1": score,
+        "status": status,
+        "thresholds": {"green_max": green_max, "yellow_max": yellow_max},
+    }
     b_read_path = os.path.join(out_dir, "bareflux_column_b_readability.json")
     ci_status_path = os.path.join(out_dir, "bareflux_ci_status.json")
 
@@ -209,7 +251,9 @@ def main():
     elif summary_path:
         out_summary = summary_path.replace(".json", ".patched.json")
     else:
-        out_summary = os.path.join(out_dir, "bareflux_orchestration_summary.patched.json")
+        out_summary = os.path.join(
+            out_dir, "bareflux_orchestration_summary.patched.json"
+        )
 
     write_json(out_summary, summary)
     write_json(ci_status_path, ci_status)

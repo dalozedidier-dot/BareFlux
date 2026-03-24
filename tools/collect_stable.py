@@ -75,7 +75,13 @@ def quantiles(xs: List[float]) -> Dict[str, float | int]:
 
     med = statistics.median(xs2)
     mad = statistics.median([abs(x - med) for x in xs2])
-    return {"p50": float(med), "p90": q(0.90), "p99": q(0.99), "mad": float(mad), "n": int(len(xs2))}
+    return {
+        "p50": float(med),
+        "p90": q(0.90),
+        "p99": q(0.99),
+        "mad": float(mad),
+        "n": int(len(xs2)),
+    }
 
 
 def _resolve_under_repo(repo_dir: Path, p: Path) -> Path:
@@ -149,7 +155,10 @@ def main() -> None:
         "k": k,
         "datasets": {
             "multi.csv": {"path": str(multi_csv), "sha256": sha256_file(multi_csv)},
-            "previous_shadow.csv": {"path": str(prev_csv), "sha256": sha256_file(prev_csv)},
+            "previous_shadow.csv": {
+                "path": str(prev_csv),
+                "sha256": sha256_file(prev_csv),
+            },
             "current.csv": {"path": str(curr_csv), "sha256": sha256_file(curr_csv)},
         },
         "results": {},
@@ -191,7 +200,19 @@ def main() -> None:
             nt_prev.mkdir(parents=True, exist_ok=True)
             nt_curr.mkdir(parents=True, exist_ok=True)
 
-            run_cmd(["python", "-m", "nulltrace", "snapshot", str(prev_csv), "--output-dir", str(nt_prev)], cwd=nt, env=env)
+            run_cmd(
+                [
+                    "python",
+                    "-m",
+                    "nulltrace",
+                    "snapshot",
+                    str(prev_csv),
+                    "--output-dir",
+                    str(nt_prev),
+                ],
+                cwd=nt,
+                env=env,
+            )
             manifests = sorted(
                 (nt_prev / "shadows").glob("*/manifest.json"),
                 key=lambda p: p.stat().st_mtime,
@@ -199,24 +220,55 @@ def main() -> None:
             )
             prev_manifest = manifests[0]
             run_cmd(
-                ["python", "-m", "nulltrace", "snapshot", str(curr_csv), "--previous-shadow", str(prev_manifest), "--output-dir", str(nt_curr)],
+                [
+                    "python",
+                    "-m",
+                    "nulltrace",
+                    "snapshot",
+                    str(curr_csv),
+                    "--previous-shadow",
+                    str(prev_manifest),
+                    "--output-dir",
+                    str(nt_curr),
+                ],
                 cwd=nt,
                 env=env,
             )
 
-            diffs = sorted((nt_curr / "shadows").glob("*/shadow_diff.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+            diffs = sorted(
+                (nt_curr / "shadows").glob("*/shadow_diff.json"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
             if diffs:
                 nt_deltas_all.extend(extract_nulltrace_abs_deltas(diffs[0]))
 
             v_out = run_dir / "vault"
             v_out.mkdir(parents=True, exist_ok=True)
-            run_cmd(["python", "-m", "voidmark", str(r_out / "graph_report.json"), "--vault-dir", str(v_out)], cwd=vm, env=env)
+            run_cmd(
+                [
+                    "python",
+                    "-m",
+                    "voidmark",
+                    str(r_out / "graph_report.json"),
+                    "--vault-dir",
+                    str(v_out),
+                ],
+                cwd=vm,
+                env=env,
+            )
             marks_counts.append(
-                len(list(v_out.rglob("*.json"))) + len(list(v_out.rglob("*.md"))) + len(list(v_out.rglob("*.txt")))
+                len(list(v_out.rglob("*.json")))
+                + len(list(v_out.rglob("*.md")))
+                + len(list(v_out.rglob("*.txt")))
             )
 
         base_edges = edge_sets[0] if edge_sets else set()
-        j_list = [jaccard(base_edges, es) for es in edge_sets[1:]] if len(edge_sets) > 1 else [1.0]
+        j_list = (
+            [jaccard(base_edges, es) for es in edge_sets[1:]]
+            if len(edge_sets) > 1
+            else [1.0]
+        )
 
         report["results"][thr_key] = {
             "riftlens": {
@@ -229,11 +281,15 @@ def main() -> None:
             },
             "voidmark": {
                 "marks_files_count_runs": marks_counts,
-                "marks_files_count_median": float(statistics.median(marks_counts)) if marks_counts else 0.0,
+                "marks_files_count_median": (
+                    float(statistics.median(marks_counts)) if marks_counts else 0.0
+                ),
             },
         }
 
-    (out / "stability_report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    (out / "stability_report.json").write_text(
+        json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
     print(f"stability_report={ (out / 'stability_report.json').resolve() }")
 
 

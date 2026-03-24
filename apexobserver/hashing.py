@@ -14,7 +14,9 @@ def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
     return h.hexdigest()
 
 
-def write_hashes_file(run_dir: Path, rel_paths: Iterable[Path], out_name: str = "hashes.sha256") -> Path:
+def write_hashes_file(
+    run_dir: Path, rel_paths: Iterable[Path], out_name: str = "hashes.sha256"
+) -> Path:
     """Write sha256 for each rel_path (relative to run_dir). Does not hash the hashes file itself."""
     out_path = run_dir / out_name
     lines = []

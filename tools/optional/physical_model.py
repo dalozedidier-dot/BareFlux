@@ -5,7 +5,9 @@ from typing import Optional, Sequence
 import numpy as np
 
 
-def lomb_scargle_power(times: Sequence[float], values: Sequence[float], freqs: Sequence[float]) -> np.ndarray:
+def lomb_scargle_power(
+    times: Sequence[float], values: Sequence[float], freqs: Sequence[float]
+) -> np.ndarray:
     """Lomb-Scargle via astropy si dispo.
 
     C'est du post-traitement optionnel. A utiliser explicitement, hors core.
@@ -25,7 +27,14 @@ def lomb_scargle_power(times: Sequence[float], values: Sequence[float], freqs: S
     return np.asarray(ls.power(f), dtype=float)
 
 
-def transit_model_batman(times: Sequence[float], period: float, t0: float, rp: float, a: float, inc_deg: float = 90.0) -> np.ndarray:
+def transit_model_batman(
+    times: Sequence[float],
+    period: float,
+    t0: float,
+    rp: float,
+    a: float,
+    inc_deg: float = 90.0,
+) -> np.ndarray:
     """Modèle transit via batman si dispo.
 
     Attention: c'est un modèle physique, donc interprétatif par nature.

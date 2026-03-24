@@ -42,7 +42,12 @@ def main():
     for fp in files:
         s = sha256_file(fp)
         if s in seen:
-            action = {"file": fp, "sha256": s, "duplicate_of": seen[s], "deleted": (not args.dry_run)}
+            action = {
+                "file": fp,
+                "sha256": s,
+                "duplicate_of": seen[s],
+                "deleted": (not args.dry_run),
+            }
             actions.append(action)
             if not args.dry_run:
                 os.remove(fp)
