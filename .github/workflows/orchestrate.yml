@@ -54,9 +54,6 @@ jobs:
             if [ -f "$dir/requirements.txt" ] && [ -s "$dir/requirements.txt" ]; then
               python -m pip install -r "$dir/requirements.txt" -c .github/constraints.txt
             fi
-            if [ -f "$dir/requirements-dev.txt" ] && [ -s "$dir/requirements-dev.txt" ]; then
-              python -m pip install -r "$dir/requirements-dev.txt" -c .github/constraints.txt
-            fi
           done
 
       - name: Run BareFlux strict orchestration
