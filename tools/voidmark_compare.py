@@ -7,6 +7,7 @@ Sortie: JSON.
 Usage:
   python tools/voidmark_compare.py --prev prev.json --curr curr.json --out report.json
 """
+
 from __future__ import annotations
 
 import argparse

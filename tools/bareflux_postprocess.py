@@ -13,6 +13,7 @@ Hypothèses minimales:
   - _bareflux_out/**/shadow_diff.json existe
   - _bareflux_out/riftlens/graph_report.json existe (sinon n_edges non patchable)
 """
+
 from __future__ import annotations
 
 import argparse

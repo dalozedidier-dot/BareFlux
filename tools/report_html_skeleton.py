@@ -7,6 +7,7 @@
 Usage:
   python tools/report_html_skeleton.py --outdir _bareflux_out --html _bareflux_out/report.html
 """
+
 from __future__ import annotations
 import argparse, os
 

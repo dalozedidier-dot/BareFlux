@@ -8,6 +8,9 @@ pillow==10.4.0
 scipy==1.13.1
 jsonschema==4.23.0
 pytest==8.3.3
+pytest-cov==7.1.0
+black==26.5.1
+mypy==2.1.0
 python-dateutil==2.9.0.post0
 pytz==2024.1
 tzdata==2024.1

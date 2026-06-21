@@ -22,6 +22,7 @@ Usage:
   python tools/fix_up047_perf_timer.py
   python tools/fix_up047_perf_timer.py --file common/utils.py
 """
+
 from __future__ import annotations
 
 import argparse

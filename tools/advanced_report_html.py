@@ -4,6 +4,7 @@ Advanced (optional): mini rapport HTML listant les outputs _bareflux_out.
 Usage:
   python tools/advanced_report_html.py --out _bareflux_out --html _bareflux_out/report.html
 """
+
 from __future__ import annotations
 
 import argparse

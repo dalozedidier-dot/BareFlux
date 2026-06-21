@@ -6,6 +6,7 @@ Advanced (optional): outlier flagging sur deltas b via IsolationForest.
 Usage:
   python tools/advanced_outliers_iforest.py --shadow "_bareflux_out/**/shadow_diff.json" --out _bareflux_out/b_outliers_iforest.json
 """
+
 from __future__ import annotations
 
 import argparse

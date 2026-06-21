@@ -7,6 +7,7 @@ Usage:
 Dépendance:
   pip install scikit-learn
 """
+
 from __future__ import annotations
 import argparse, json, glob, os
 

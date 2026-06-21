@@ -4,6 +4,7 @@ Convertit un history JSONL en CSV de tendances.
 Usage:
   python tools/trend_report.py --history .bareflux_history.jsonl --out _bareflux_out/bareflux_trend.csv
 """
+
 from __future__ import annotations
 
 import argparse

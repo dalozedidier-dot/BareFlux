@@ -4,6 +4,7 @@ RiftLens stability: Jaccard similarity nodes/edges entre 2 graph_report.json.
 Usage:
   python tools/riftlens_stability.py --g1 prev.json --g2 curr.json --out stability.json
 """
+
 from __future__ import annotations
 
 import argparse

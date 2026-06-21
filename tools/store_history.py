@@ -4,6 +4,7 @@ Append un point de monitoring dans un history JSONL.
 Usage:
   python tools/store_history.py --out _bareflux_out --history .bareflux_history.jsonl --keep 10
 """
+
 from __future__ import annotations
 
 import argparse

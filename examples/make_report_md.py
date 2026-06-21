@@ -5,6 +5,7 @@ Génère un mini-rapport Markdown (README/article) à partir des fichiers stats 
 Usage:
   python examples/make_report_md.py --path . --out bareflux_report.md
 """
+
 from __future__ import annotations
 
 import argparse

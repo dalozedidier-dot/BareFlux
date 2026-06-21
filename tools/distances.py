@@ -7,6 +7,7 @@ Distances de distributions (sans dépendances externes obligatoires).
 Notes:
 - Utile pour détecter des shifts subtils que mean/std ratent.
 """
+
 from __future__ import annotations
 
 

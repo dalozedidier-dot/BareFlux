@@ -10,6 +10,7 @@ Usage:
   python examples/extract_and_print.py --path .
   python examples/extract_and_print.py --path _bareflux_out
 """
+
 from __future__ import annotations
 
 import argparse

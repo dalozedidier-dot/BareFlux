@@ -8,6 +8,7 @@ Entrée: dossier run_*/.../thr_*/graph_report.json
 Usage:
   python tools/riftlens_sweep_report.py --root riftlens_mass --out_csv _bareflux_out/riftlens_sweep.csv --out_json _bareflux_out/riftlens_sweep.json
 """
+
 from __future__ import annotations
 
 import argparse

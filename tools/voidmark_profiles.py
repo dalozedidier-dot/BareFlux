@@ -5,6 +5,7 @@ Profils de bruit structurés (VoidMark) :
 - subset_shift
 - correlated_blocks
 """
+
 from __future__ import annotations
 
 import random
