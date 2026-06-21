@@ -63,7 +63,7 @@ jobs:
         env:
           PYTHONUNBUFFERED: "1"
         run: |
-          ./run_modules.sh --modules-dir modules --out _bareflux_out --strict
+          bash run_modules.sh --modules-dir modules --out _bareflux_out --strict
 
       - name: Upload outputs
         if: always()

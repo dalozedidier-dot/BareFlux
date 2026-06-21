@@ -27,11 +27,11 @@ jobs:
 
       - name: Compile Python files
         run: |
-          python -m compileall src tests tools examples
+          python -m compileall src/bareflux tests tools examples
 
       - name: Check formatting
         run: |
-          black --check src tests tools examples
+          black --check src/bareflux tests tools examples
 
       - name: Run tests
         run: |
