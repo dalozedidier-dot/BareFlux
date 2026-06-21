@@ -2,23 +2,20 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import subprocess
-import sys
 import zipfile
 
-import pytest
 from jsonschema import validate
 
-from apexobserver.engine import run_observer
-from apexobserver.util import load_json_file
+from bareflux.engine import run_observer
+from bareflux.util import load_json_file
 
 
 def test_run_observer_creates_auditable_bundle(tmp_path: Path):
     repo_root = Path(__file__).resolve().parents[1]
     input_csv = repo_root / "tests" / "data" / "minimal_timeseries.csv"
-    config = load_json_file(repo_root / "examples" / "apex.json")
+    config = load_json_file(repo_root / "examples" / "bareflux.json")
 
-    out_root = tmp_path / "_apex_out"
+    out_root = tmp_path / "_bareflux_out"
     run_dir = run_observer(
         input_csv=input_csv,
         output_root=out_root,
@@ -30,7 +27,7 @@ def test_run_observer_creates_auditable_bundle(tmp_path: Path):
             "--output",
             str(out_root),
             "--config",
-            str(repo_root / "examples" / "apex.json"),
+            str(repo_root / "examples" / "bareflux.json"),
         ],
     )
 
@@ -39,13 +36,11 @@ def test_run_observer_creates_auditable_bundle(tmp_path: Path):
     assert (run_dir / "hashes.sha256").exists()
     assert (run_dir / "bundle.zip").exists()
 
-    # Expected series artifacts
     sdir = run_dir / "series" / "minimal"
     for name in ["report.json", "features.csv", "rupture_marks.csv", "errors.json"]:
         assert (sdir / name).exists()
 
-    # Validate schemas
-    schemas_dir = repo_root / "apexobserver" / "schemas"
+    schemas_dir = repo_root / "src" / "bareflux" / "schemas"
     manifest_schema = json.loads(
         (schemas_dir / "run_manifest.schema.json").read_text(encoding="utf-8")
     )
@@ -59,12 +54,10 @@ def test_run_observer_creates_auditable_bundle(tmp_path: Path):
     report = json.loads((sdir / "report.json").read_text(encoding="utf-8"))
     validate(report, report_schema)
 
-    # hashes.sha256 contains bundle.zip and run_manifest.json
     hashes = (run_dir / "hashes.sha256").read_text(encoding="utf-8")
     assert "bundle.zip" in hashes
     assert "run_manifest.json" in hashes
 
-    # bundle.zip includes the expected paths
     with zipfile.ZipFile(run_dir / "bundle.zip", "r") as zf:
         names = set(zf.namelist())
     assert "run_manifest.json" in names
@@ -73,6 +66,5 @@ def test_run_observer_creates_auditable_bundle(tmp_path: Path):
     assert "series/minimal/report.json" in names
 
 
-def test_cli_help_runs():
-    # Basic sanity check: module entrypoint should import cleanly
-    import apexobserver.cli  # noqa: F401
+def test_bareflux_cli_imports():
+    import bareflux.cli  # noqa: F401

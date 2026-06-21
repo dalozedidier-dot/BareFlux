@@ -1,0 +1,37 @@
+{
+  "title": "BareFlux Series Report",
+  "type": "object",
+  "required": [
+    "tool",
+    "version",
+    "series_name",
+    "generated_at_utc"
+  ],
+  "properties": {
+    "tool": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "series_name": {
+      "type": "string"
+    },
+    "generated_at_utc": {
+      "type": "string"
+    },
+    "input": {
+      "type": "object"
+    },
+    "stats": {
+      "type": "object"
+    },
+    "rupture": {
+      "type": "object"
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

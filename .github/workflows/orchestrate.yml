@@ -1,48 +1,68 @@
-name: Orchestrate All Modules
+name: orchestrate
 
 on:
-  push:
-    branches: [ main, master ]
   workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - "run_modules.sh"
+      - "src/**"
+      - "tools/**"
+      - ".github/workflows/orchestrate.yml"
+
+concurrency:
+  group: bareflux-orchestrate-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   run-all:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-
     steps:
       - name: Checkout BareFlux
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Checkout RiftLens
+        uses: actions/checkout@v4
+        with:
+          repository: dalozedidier-dot/RiftLens
+          path: modules/RiftLens
+
+      - name: Checkout NullTrace
+        uses: actions/checkout@v4
+        with:
+          repository: dalozedidier-dot/NullTrace
+          path: modules/NullTrace
+
+      - name: Checkout VoidMark
+        uses: actions/checkout@v4
+        with:
+          repository: dalozedidier-dot/VoidMark
+          path: modules/VoidMark
+
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
 
-      - name: Clone modules (loose)
+      - name: Install dependencies
         run: |
-          mkdir -p modules
-          git clone --depth 1 https://github.com/dalozedidier-dot/NullTrace.git modules/NullTrace
-          git clone --depth 1 https://github.com/dalozedidier-dot/RiftLens.git  modules/RiftLens
-          git clone --depth 1 https://github.com/dalozedidier-dot/VoidMark.git  modules/VoidMark
-
-      - name: Install dependencies (all modules)
-        shell: bash
-        run: |
-          python -m pip install --upgrade pip
-          for dir in modules/NullTrace modules/RiftLens modules/VoidMark .; do
-            echo ""
-            echo "== Installing deps in $dir =="
-            if [ -f "$dir/requirements.txt" ] && [ -s "$dir/requirements.txt" ]; then python -m pip install -r "$dir/requirements.txt"; fi
-            if [ -f "$dir/requirements-dev.txt" ] && [ -s "$dir/requirements-dev.txt" ]; then python -m pip install -r "$dir/requirements-dev.txt"; fi
+          set -euo pipefail
+          python -m pip install -U pip
+          python -m pip install -e ".[dev]" -c .github/constraints.txt
+          for dir in modules/RiftLens modules/NullTrace modules/VoidMark; do
+            if [ -f "$dir/requirements.txt" ] && [ -s "$dir/requirements.txt" ]; then
+              python -m pip install -r "$dir/requirements.txt" -c .github/constraints.txt
+            fi
+            if [ -f "$dir/requirements-dev.txt" ] && [ -s "$dir/requirements-dev.txt" ]; then
+              python -m pip install -r "$dir/requirements-dev.txt" -c .github/constraints.txt
+            fi
           done
 
-      - name: Run orchestrator
+      - name: Run BareFlux strict orchestration
         env:
           PYTHONUNBUFFERED: "1"
         run: |
-          chmod +x run_modules.sh
           ./run_modules.sh --modules-dir modules --out _bareflux_out --strict
 
       - name: Upload outputs
@@ -51,8 +71,6 @@ jobs:
         with:
           name: bareflux-orchestration-out
           path: |
-            _bareflux_out/
-            modules/NullTrace/outputs/
-            modules/RiftLens/outputs/
-            modules/VoidMark/vault_test/
+            _bareflux_out/**
+            _ci_out/datasets/**
           if-no-files-found: ignore

@@ -1,0 +1,12 @@
+{
+  "title": "BareFlux robustness stress report",
+  "type": "object",
+  "required": ["schema_version", "out_dir", "scenario_count", "scenarios"],
+  "properties": {
+    "schema_version": {"const": "bareflux.robustness_stress.v1"},
+    "out_dir": {"type": "string"},
+    "scenario_count": {"type": "integer"},
+    "scenarios": {"type": "array"}
+  },
+  "additionalProperties": true
+}

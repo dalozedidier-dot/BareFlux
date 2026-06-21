@@ -4,23 +4,23 @@ on:
   workflow_dispatch:
     inputs:
       runs:
-        description: "Nombre d'itérations (ex 100)"
+        description: "Number of iterations"
         required: false
         default: "100"
       n:
-        description: "Lignes par dataset synthétique"
+        description: "Rows per synthetic dataset"
         required: false
         default: "200"
       seed_base:
-        description: "Base seed (seed = seed_base + i)"
+        description: "Base seed, final seed = seed_base + i"
         required: false
         default: "1000"
       thresholds:
-        description: "Seuils corr-threshold (csv)"
+        description: "Correlation thresholds, comma-separated"
         required: false
         default: "0.50,0.60,0.70,0.75,0.80"
       k:
-        description: "Répétitions par seuil (collect_stable)"
+        description: "Repetitions per threshold"
         required: false
         default: "5"
 
@@ -57,63 +57,19 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-          cache: "pip"
+          python-version: "3.12"
+          cache: pip
 
-      - name: Ensure .github/constraints.txt exists (generated if missing)
-        run: |
-          set -euo pipefail
-          if [ -f .github/constraints.txt ]; then
-            echo ".github/constraints.txt present"
-            exit 0
-          fi
-
-          echo ".github/constraints.txt missing, generating template"
-          mkdir -p .github
-          cat > .github/constraints.txt << 'EOF'
-          numpy==1.26.4
-          pandas==2.2.2
-          matplotlib==3.9.2
-          networkx==3.3
-          pillow==10.4.0
-          scipy==1.13.1
-          jsonschema==4.23.0
-          pytest==8.3.3
-          python-dateutil==2.9.0.post0
-          pytz==2024.1
-          tzdata==2024.1
-          six==1.17.0
-          packaging==24.1
-          typing-extensions==4.12.2
-          EOF
-
-          echo "Generated .github/constraints.txt:"
-          sed -n '1,200p' .github/constraints.txt
-
-      - name: Install dependencies (pinned via .github/constraints.txt)
+      - name: Install dependencies
         run: |
           set -euo pipefail
           python -m pip install -U pip
-
-          pip install -r requirements.txt -c .github/constraints.txt
-
-          if [ -f requirements-dev.txt ] && [ -s requirements-dev.txt ]; then
-            pip install -r requirements-dev.txt -c .github/constraints.txt
-          else
-            echo "requirements-dev.txt absent ou vide, skip"
-          fi
-
-          if [ -f modules/RiftLens/requirements.txt ] && [ -s modules/RiftLens/requirements.txt ]; then
-            pip install -r modules/RiftLens/requirements.txt -c .github/constraints.txt
-          else
-            echo "modules/RiftLens/requirements.txt absent ou vide, skip"
-          fi
-
-          if [ -f modules/NullTrace/requirements.txt ] && [ -s modules/NullTrace/requirements.txt ]; then
-            pip install -r modules/NullTrace/requirements.txt -c .github/constraints.txt
-          else
-            echo "modules/NullTrace/requirements.txt absent ou vide, skip"
-          fi
+          python -m pip install -e ".[dev]" -c .github/constraints.txt
+          for dir in modules/RiftLens modules/NullTrace modules/VoidMark; do
+            if [ -f "$dir/requirements.txt" ] && [ -s "$dir/requirements.txt" ]; then
+              python -m pip install -r "$dir/requirements.txt" -c .github/constraints.txt
+            fi
+          done
 
       - name: Mass loop
         run: |
@@ -131,11 +87,21 @@ jobs:
             SEED=$((SEED_BASE + i))
             RUN_DIR="_ci_out/mass/run_${i}"
             mkdir -p "${RUN_DIR}/datasets" "${RUN_DIR}/stability"
-
             python tools/generate_synth_datasets.py --out-dir "${RUN_DIR}/datasets" --n "$N" --seed "$SEED"
-
-            python tools/collect_stable.py               --thresholds "$THR"               --k "$K"               --datasets-dir "${{ github.workspace }}/${RUN_DIR}/datasets"               --out-dir "${{ github.workspace }}/${RUN_DIR}/stability"
+            python tools/collect_stable.py \
+              --thresholds "$THR" \
+              --k "$K" \
+              --datasets-dir "${{ github.workspace }}/${RUN_DIR}/datasets" \
+              --out-dir "${{ github.workspace }}/${RUN_DIR}/stability"
           done
+
+      - name: Build mass overview
+        run: |
+          set -euo pipefail
+          python tools/mass_collect_overview.py \
+            --mass-dir _ci_out/mass \
+            --out-json _ci_out/mass/mass_collect_overview.json \
+            --out-csv _ci_out/mass/mass_collect_summary.csv
 
       - name: Upload artifacts
         if: always()
@@ -143,3 +109,4 @@ jobs:
         with:
           name: bloc4-mass-collect
           path: _ci_out/mass/**
+          if-no-files-found: ignore

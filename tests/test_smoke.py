@@ -1,5 +1,7 @@
-from pathlib import Path
+from __future__ import annotations
+
 import json
+from pathlib import Path
 import subprocess
 import sys
 
@@ -9,7 +11,7 @@ def test_cli_run_smoke(tmp_path: Path):
     cmd = [
         sys.executable,
         "-m",
-        "apexobserver.cli",
+        "bareflux.cli",
         "run",
         "--input",
         "examples/minimal_timeseries.csv",
@@ -36,7 +38,7 @@ def test_invalid_input_generates_report(tmp_path: Path):
     cmd = [
         sys.executable,
         "-m",
-        "apexobserver.cli",
+        "bareflux.cli",
         "run",
         "--input",
         str(bad),

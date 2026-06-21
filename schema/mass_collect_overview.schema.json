@@ -1,0 +1,14 @@
+{
+  "title": "BareFlux mass collect overview",
+  "type": "object",
+  "required": ["schema_version", "created_at_utc", "mass_dir", "run_count", "runs", "aggregate"],
+  "properties": {
+    "schema_version": {"const": "bareflux.mass_collect_overview.v1"},
+    "created_at_utc": {"type": "string"},
+    "mass_dir": {"type": "string"},
+    "run_count": {"type": "integer"},
+    "runs": {"type": "array"},
+    "aggregate": {"type": "object"}
+  },
+  "additionalProperties": true
+}
