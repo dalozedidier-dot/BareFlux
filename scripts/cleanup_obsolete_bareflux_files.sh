@@ -7,7 +7,9 @@ set -euo pipefail
 
 rm -rf apexobserver
 rm -rf src/apexobserver
+rm -rf ApexObserver.egg-info
 rm -f examples/apex.json
+rm -f configs/apex_default.json
 rm -f .github/workflows/bareflux-improvements.yml
 
 # Keep run-all.yml as a compatibility workflow if present in v0.2.1+.
