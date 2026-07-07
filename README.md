@@ -71,9 +71,11 @@ strict_errors
 .github/workflows/collect-stable.yml
 .github/workflows/mass-collect.yml
 .github/workflows/apply-repo-settings.yml
+.github/workflows/run-all.yml
 ```
 
-Les workflows redondants `run-all.yml` et `bareflux-improvements.yml` ont ete supprimes.
+`run-all.yml` est conserve comme workflow de compatibilite pour les anciens appels.
+Le workflow redondant `bareflux-improvements.yml` a ete supprime.
 
 ## Stabilite et robustesse
 

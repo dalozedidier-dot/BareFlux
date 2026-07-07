@@ -29,6 +29,7 @@ bareflux = "bareflux.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["bareflux*"]
 
 [tool.setuptools.package-data]
 bareflux = ["schemas/*.json"]

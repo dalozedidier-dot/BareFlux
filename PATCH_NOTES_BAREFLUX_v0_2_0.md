@@ -20,7 +20,10 @@
 ## Workflows
 
 - Workflows conserves : `ci.yml`, `orchestrate.yml`, `collect-stable.yml`, `mass-collect.yml`, `apply-repo-settings.yml`.
-- Workflows supprimes : `run-all.yml`, `bareflux-improvements.yml`.
+- Workflows supprimes dans le plan initial : `run-all.yml`,
+  `bareflux-improvements.yml`. Depuis v0.2.1, `run-all.yml` est garde comme
+  workflow de compatibilite, tandis que `bareflux-improvements.yml` reste
+  obsolete.
 - Unification sur `.github/constraints.txt`.
 - Installation de VoidMark ajoutee dans les workflows d'orchestration, de stabilite et de collecte massive.
 

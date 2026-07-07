@@ -1,8 +1,0 @@
-{
-  "series_name": "minimal",
-  "value_col": "value",
-  "time_col": "timestamp",
-  "rupture": {
-    "z_threshold": 3.0
-  }
-}
