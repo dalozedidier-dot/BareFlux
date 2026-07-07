@@ -56,10 +56,12 @@ pytest -q
 mypy src/bareflux
 ```
 
-Resultat observe :
+Resultat observe sur Linux :
 
 ```text
 black: OK
 pytest: 6 passed
 mypy: Success, no issues found
 ```
+
+Sur Windows, le test Bash est ignore proprement si Bash n'est pas disponible.

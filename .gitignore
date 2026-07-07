@@ -7,6 +7,7 @@ __pycache__/
 env/
 venv/
 .venv/
+.venv*/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
@@ -15,6 +16,9 @@ venv/
 # Outputs
 outputs/
 vault_test/
+_bareflux_out/
+_ci_out/
+_check*/
 
 # Data
 data/
