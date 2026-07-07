@@ -8,6 +8,7 @@ env/
 venv/
 .venv/
 .venv*/
+.ci_repro/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
