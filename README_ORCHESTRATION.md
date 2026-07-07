@@ -55,6 +55,8 @@ Si un artefact manque, le manifeste est ecrit avec `status = FAIL` et la liste `
 
 `orchestrate.yml` clone les trois modules, installe leurs dependances avec `.github/constraints.txt`, lance `run_modules.sh --strict`, puis publie les artefacts.
 
+`run-all.yml` reste present comme workflow de compatibilite. Le workflow canonique pour l'orchestration stricte est `orchestrate.yml`.
+
 `collect-stable.yml` mesure la stabilite sur plusieurs seuils et genere aussi les jeux de stress.
 
 `mass-collect.yml` repete les runs, puis produit :
