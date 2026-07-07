@@ -1,0 +1,29 @@
+{
+  "tool": "BareFlux",
+  "version": "0.2.0",
+  "series_name": "minimal",
+  "input": {
+    "csv": "tests\\data\\minimal_timeseries.csv",
+    "value_col": "value",
+    "time_col": "timestamp"
+  },
+  "rupture": {
+    "method": "zscore_first_diff",
+    "z_threshold": 3.0,
+    "count": 0
+  },
+  "stats": {
+    "count": 15,
+    "finite_count": 15,
+    "missing_count": 0,
+    "mean": 1.0073333333333332,
+    "std": 1.5124222136628889,
+    "min": -3.0,
+    "max": 5.0,
+    "median": 1.0,
+    "p05": -0.2699999999999997,
+    "p95": 2.269999999999996,
+    "trend_slope": -0.07200000000000001
+  },
+  "generated_at_utc": "2026-07-07T18:17:30.194251+00:00"
+}
