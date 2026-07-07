@@ -1,0 +1,11 @@
+{
+  "schema_version": "bareflux.run_report.v1",
+  "run_dir": "run_20260707T181730Z_e9fc81",
+  "status": "ok",
+  "series": [
+    {
+      "series": "minimal",
+      "status": ""
+    }
+  ]
+}
