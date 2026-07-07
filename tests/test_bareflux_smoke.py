@@ -3,9 +3,12 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import textwrap
+
+import pytest
 
 
 def make_fake_module(modules: Path, name: str, package: str, body: str) -> None:
@@ -79,6 +82,9 @@ def make_fake_modules(modules: Path) -> None:
 
 
 def test_run_modules_strict_with_fake_modules(tmp_path: Path):
+    if shutil.which("bash") is None:
+        pytest.skip("run_modules.sh smoke test requires bash")
+
     repo_root = Path(__file__).resolve().parents[1]
     modules = tmp_path / "modules"
     make_fake_modules(modules)
